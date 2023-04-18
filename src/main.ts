@@ -23,14 +23,6 @@ export default class SlideNotePlugin extends Plugin {
 			})
 		)
 
-
-		/* Unuseful code begin */
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SlideNoteSettingsTab(this.app, this));
 
@@ -43,7 +35,7 @@ export default class SlideNotePlugin extends Plugin {
 	registerFuctions() {
 		let processor = new PDFBlockProcessor(this);
 		this.registerMarkdownCodeBlockProcessor(
-			"pdf",
+			"slide",
 			async (src, el, ctx) =>
 				processor.CallBack(src, el, ctx)
 		);

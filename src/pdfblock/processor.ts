@@ -1,5 +1,5 @@
 import * as pdfjs from "pdfjs-dist";
-import { FrontMatterCache, MarkdownPostProcessorContext } from "obsidian";
+import {FrontMatterCache, MarkdownPostProcessorContext, Notice} from "obsidian";
 import SlideNotePlugin from '../main'
 
 interface PDFBlockParameters {
@@ -9,6 +9,7 @@ interface PDFBlockParameters {
 	scale: number;
 	rotat: number;
 	rect: Array<number>;
+	annot: string;
 }
 
 export class PDFBlockProcessor {
@@ -62,12 +63,10 @@ export class PDFBlockProcessor {
 					}
 
 					// Get Viewport
-					const offsetX = Math.floor(
-						parameters.rect[0] * -1 * parameters.scale
-					);
-					const offsetY = Math.floor(
-						parameters.rect[1] * -1 * parameters.scale
-					);
+					const offsetX = parameters.rect[0] == -1 ?
+						0 : Math.floor(parameters.rect[0] * -1 * parameters.scale);
+					const offsetY = parameters.rect[1] == -1 ?
+						0 : Math.floor(parameters.rect[1] * -1 * parameters.scale);
 
 					// Render Canvas
 					const canvas = host.createEl("canvas");
@@ -87,7 +86,7 @@ export class PDFBlockProcessor {
 						offsetY: offsetY,
 					});
 
-					if (parameters.rect[2] < 1) {
+					if (parameters.rect[0] == -1) {
 						canvas.height = viewport.height;
 						canvas.width = viewport.width;
 					} else {
@@ -100,8 +99,11 @@ export class PDFBlockProcessor {
 					};
 					await page.render(renderContext).promise.then(
 						function () {
-							// TODO add annotation
-							eval("")
+							if (parameters.annot != "") {
+								new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
+								const ctx = context
+								eval(parameters.annot)
+							}
 						}
 					)
 
@@ -117,6 +119,7 @@ export class PDFBlockProcessor {
 		const lines = src.split("\n");
 		const keywords = ["file", "page", "link", "scale", "rotat", "rect"];
 		const paramsRaw: { [k: string]: string } = {};
+		const annot: Array<string> = [];
 
 		for (let i = 0; i < lines.length; i++) {
 			const words = lines[i].trim().split(":")
@@ -124,15 +127,19 @@ export class PDFBlockProcessor {
 				if (words[1].length != 0)
 					paramsRaw[words[0]] = words[1].trim();
 			}
+			else {
+				annot.push(lines[i].trim())
+			}
 		}
-
+		console.log(annot)
 		const params: PDFBlockParameters = {
 			file: "",
 			page: [],
 			link: this.plugin.settings.default_link,
 			scale: 0,
 			rotat: 0,
-			rect: [-1, -1, -1, -1]
+			rect: [-1, -1, -1, -1],
+			annot: annot.join("\n")
 		};
 
 		// handle file
