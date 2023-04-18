@@ -1,8 +1,6 @@
 import * as pdfjs from "pdfjs-dist";
-
-import {App, FrontMatterCache, MarkdownPostProcessor, MarkdownPostProcessorContext, TFile} from "obsidian";
+import { FrontMatterCache, MarkdownPostProcessorContext } from "obsidian";
 import SlideNotePlugin from '../main'
-import { SlideNoteSettings } from '../settings';
 
 interface PDFBlockParameters {
 	file: string;
@@ -28,7 +26,8 @@ export class PDFBlockProcessor {
 		try {
 			parameters = await this.parseParameters(src, frontmatter);
 		} catch (e) {
-			el.createEl("p", {text: "[SlideNote] Invalid Parameters: " + e.message});
+			const p = el.createEl("p", {text: "[SlideNote] Invalid Parameters: " + e.message});
+			p.style.color = "red"
 		}
 
 		// render PDF pages
@@ -95,15 +94,21 @@ export class PDFBlockProcessor {
 						canvas.height = Math.floor(parameters.rect[2] * parameters.scale);
 						canvas.width = Math.floor(parameters.rect[3] * parameters.scale);
 					}
-
 					const renderContext = {
 						canvasContext: context,
 						viewport: viewport,
 					};
-					await page.render(renderContext);
+					await page.render(renderContext).promise.then(
+						function () {
+							// TODO add annotation
+							eval("")
+						}
+					)
+
 				}
 			} catch (error) {
-				el.createEl("p", {text: "[SlideNote] Render Error: " + error});
+				const p = el.createEl("p", {text: "[SlideNote] Render Error: " + error});
+				p.style.color = "red"
 			}
 		}
 	}
@@ -179,7 +184,7 @@ export class PDFBlockProcessor {
 		if (paramsRaw["rect"] != undefined)
 			params.rect = JSON.parse(paramsRaw["rect"]);
 
-		// console.log(params)
+		console.log(params)
 		return params;
 	}
 }

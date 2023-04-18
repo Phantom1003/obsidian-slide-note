@@ -22,7 +22,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
-		"canvas": "^2.11.2",
-		"pdfjs-dist": "^3.5.141"
+		"canvas": "2.11.2",
+		"pdfjs-dist": "3.2.146"
 	}
 }

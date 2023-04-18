@@ -1,7 +1,7 @@
 import * as pdfjs from "pdfjs-dist";
 import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 
-import {App, Editor, FileSystemAdapter, MarkdownView, MarkdownPreviewView, Modal, Notice, Plugin} from 'obsidian';
+import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 import { PDFBlockProcessor } from "./pdfblock/processor";
 
@@ -13,6 +13,7 @@ export default class SlideNotePlugin extends Plugin {
 
 		await this.loadSettings();
 		pdfjs.GlobalWorkerOptions.workerSrc = worker;
+
 		this.registerFuctions();
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
