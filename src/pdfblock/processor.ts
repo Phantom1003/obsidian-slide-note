@@ -13,13 +13,21 @@ interface PDFBlockParameters {
 	annot: string;
 }
 
+interface FileCacheEntry {
+	path: string;
+	valid: boolean;
+	pending: boolean;
+	timestamp: number;
+	buffer: ArrayBuffer | null;
+}
+
 export class PDFBlockProcessor {
 	plugin: SlideNotePlugin;
-	count: number;
+	fileCache: Array<FileCacheEntry>;
 
 	constructor(plugin: SlideNotePlugin) {
 		this.plugin = plugin;
-		this.count = 0;
+		this.fileCache = [];
 	}
 
 	async CallBack(src: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
@@ -36,9 +44,24 @@ export class PDFBlockProcessor {
 		if (parameters !== null) {
 			try {
 				// read PDF
-				const arrayBuffer = await app.vault.adapter.readBinary(parameters.file);
+
+				if (!this.checkActiveFile(ctx.sourcePath))
+					return
+
+				const arrayBuffer = await this.requestFile(parameters.file);
+
+				if (!this.checkActiveFile(ctx.sourcePath))
+					return
+
 				const buffer = Buffer.from(arrayBuffer);
+
+				if (!this.checkActiveFile(ctx.sourcePath))
+					return
+
 				const document = await pdfjs.getDocument(buffer).promise;
+
+				if (!this.checkActiveFile(ctx.sourcePath))
+					return
 
 				// page parameter as trigger for whole pdf, 0 = all pages
 				if ((<number[]>parameters.page).includes(0)) {
@@ -51,7 +74,14 @@ export class PDFBlockProcessor {
 
 				// Read pages
 				for (const pageNumber of <number[]>parameters.page) {
+					if (!this.checkActiveFile(ctx.sourcePath))
+						return
+
 					const page = await document.getPage(pageNumber);
+
+					if (!this.checkActiveFile(ctx.sourcePath))
+						return
+
 					let host = el;
 
 					// Create hyperlink for Page
@@ -74,6 +104,9 @@ export class PDFBlockProcessor {
 					if (parameters.scale == 1) {
 						canvas.style.width = "100%";
 					}
+
+					if (!this.checkActiveFile(ctx.sourcePath))
+						return
 
 					const context = canvas.getContext("2d");
 
@@ -98,7 +131,11 @@ export class PDFBlockProcessor {
 						canvasContext: context,
 						viewport: viewport,
 					};
-					await page.render(renderContext).promise.then(
+
+					if (!this.checkActiveFile(ctx.sourcePath))
+						return
+
+					page.render(renderContext).promise.then(
 						() => {
 							if (parameters.annot != "") {
 								new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
@@ -146,7 +183,7 @@ export class PDFBlockProcessor {
 				annot.push(lines[i].trim())
 			}
 		}
-		console.log(annot)
+
 		const params: PDFBlockParameters = {
 			file: "",
 			page: [],
@@ -206,8 +243,39 @@ export class PDFBlockProcessor {
 		if (paramsRaw["rect"] != undefined)
 			params.rect = JSON.parse(paramsRaw["rect"]);
 
-		console.log(params)
+		// console.log(params)
 		return params;
+	}
+
+	checkActiveFile(ctx_file: string) {
+		const cur_file = app.workspace.getActiveFile()?.path;
+		if (ctx_file != cur_file)
+			return false;
+		return true;
+	}
+
+	async requestFile(path: string) {
+		console.log("request " + path)
+		const index = this.fileCache.map(f => f.path).lastIndexOf(path);
+		console.log("get " + index)
+		if (index == -1) {
+			const arrayBuffer = await app.vault.adapter.readBinary(path);
+			const update = this.fileCache.map(f => f.path).lastIndexOf(path);
+			if (update == -1) {
+				this.fileCache.push({
+					path: path,
+					valid: true,
+					pending: false,
+					timestamp: Date.now(),
+					buffer: arrayBuffer
+				});
+			}
+			return arrayBuffer;
+		}
+		else {
+			return this.fileCache[index].buffer;
+		}
+
 	}
 }
 
