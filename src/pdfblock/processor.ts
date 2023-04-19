@@ -1,7 +1,6 @@
 import * as pdfjs from "pdfjs-dist";
-import safeEval from "safe-eval";
 import {FrontMatterCache, MarkdownPostProcessorContext, Notice} from "obsidian";
-import SlideNotePlugin from '../main'
+import SlideNotePlugin from '../main';
 
 interface PDFBlockParameters {
 	file: string;
@@ -13,46 +12,28 @@ interface PDFBlockParameters {
 	annot: string;
 }
 
-interface FileCacheEntry {
-	path: string;
-	valid: boolean;
-	pending: boolean;
-	timestamp: number;
-	buffer: ArrayBuffer | null;
-}
-
 export class PDFBlockProcessor {
 	plugin: SlideNotePlugin;
-	fileCache: Array<FileCacheEntry>;
 
 	constructor(plugin: SlideNotePlugin) {
 		this.plugin = plugin;
-		this.fileCache = [];
 	}
 
-	async CallBack(src: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+	async codeProcessCallBack(src: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 		const frontmatter = app.metadataCache.getCache(ctx.sourcePath)?.frontmatter as FrontMatterCache
 		let parameters = null;
 		try {
 			parameters = await this.parseParameters(src, frontmatter);
 		} catch (e) {
 			const p = el.createEl("p", {text: "[SlideNote] Invalid Parameters: " + e.message});
-			p.style.color = "red"
+			p.style.color = "red";
 		}
 
 		// render PDF pages
 		if (parameters !== null) {
 			try {
 				// read PDF
-
-				if (!this.checkActiveFile(ctx.sourcePath))
-					return
-
-				const arrayBuffer = await this.requestFile(parameters.file);
-
-				if (!this.checkActiveFile(ctx.sourcePath))
-					return
-
+				const arrayBuffer = await app.vault.adapter.readBinary(parameters.file);
 				const buffer = Buffer.from(arrayBuffer);
 
 				if (!this.checkActiveFile(ctx.sourcePath))
@@ -78,10 +59,6 @@ export class PDFBlockProcessor {
 						return
 
 					const page = await document.getPage(pageNumber);
-
-					if (!this.checkActiveFile(ctx.sourcePath))
-						return
-
 					let host = el;
 
 					// Create hyperlink for Page
@@ -135,24 +112,30 @@ export class PDFBlockProcessor {
 					if (!this.checkActiveFile(ctx.sourcePath))
 						return
 
-					page.render(renderContext).promise.then(
+					await page.render(renderContext).promise.then(
 						() => {
-							if (parameters.annot != "") {
-								new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
-								let ctx = {
-									ctx: context,
-									scale: baseScale * parameters.scale,
-									h: baseView.height,
-									w: baseView.width,
-									ScalePixelPos: function (num: number) { return baseScale * parameters.scale * num },
-									PctH: function (p: number) { return p * baseView.height * baseScale * parameters.scale },
-									PctW: function (p: number) { return p * baseView.width * baseScale * parameters.scale }
-								}
+							if (parameters.annot != "" && this.plugin.settings.allow_annotations) {
+								// new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
 								try {
-									const prologue = "ctx.font=`${20*scale}px Arial`;"
-									safeEval(prologue + parameters.annot, ctx)
+									const annots = new Function(
+										"ctx", "scale", "h", "w",
+										`	// prologue
+											function H(n) { 
+												if (n > 0 && n < 1) return n * h * scale;
+												else return n * scale;
+											}
+											function W(n) {
+												if (n > 0 && n < 1) return n * w * scale;
+												else return n * scale;
+											}
+											ctx.font=\`\${20 * scale}px Arial\`
+											// user input
+											${parameters.annot}
+										`
+									)
+									annots(context, baseScale * parameters.scale, baseView.height, baseView.width)
 								} catch (error) {
-									throw new Error("Annotation: " + error)
+									throw new Error(`Annotation Failed: ${error}`);
 								}
 
 							}
@@ -162,7 +145,7 @@ export class PDFBlockProcessor {
 				}
 			} catch (error) {
 				const p = el.createEl("p", {text: "[SlideNote] Render Error: " + error});
-				p.style.color = "red"
+				p.style.color = "red";
 			}
 		}
 	}
@@ -180,7 +163,7 @@ export class PDFBlockProcessor {
 					paramsRaw[words[0]] = words[1].trim();
 			}
 			else {
-				annot.push(lines[i].trim())
+				annot.push(lines[i].trim());
 			}
 		}
 
@@ -212,33 +195,33 @@ export class PDFBlockProcessor {
 		const pages = paramsRaw["page"].split(",");
 		for (let i = 0; i < pages.length; i++) {
 			if (pages[i].contains("-")) {
-				const range = pages[i].split("-")
+				const range = pages[i].split("-");
 				if (range.length != 2)
-					throw new Error(pages[i] + ": Invalid page range")
-				params.page = params.page.concat(Array.from({ length: parseInt(range[1]) - parseInt(range[0]) + 1 }, (_, i) => parseInt(range[0]) + i))
+					throw new Error(pages[i] + ": Invalid page range");
+				params.page = params.page.concat(Array.from({ length: parseInt(range[1]) - parseInt(range[0]) + 1 }, (_, i) => parseInt(range[0]) + i));
 			}
 			else {
-				params.page.push(parseInt(pages[i]))
+				params.page.push(parseInt(pages[i]));
 			}
 		}
 
 		// handle link
 		if (paramsRaw["link"] == undefined)
-			params.link = "default_link" in frontmatter ? frontmatter["default_link"] : this.plugin.settings.default_link
+			params.link = "default_link" in frontmatter ? frontmatter["default_link"] : this.plugin.settings.default_link;
 		else
-			params.link = paramsRaw["link"].toLowerCase() === 'true'
+			params.link = paramsRaw["link"].toLowerCase() === 'true';
 
 		// handle scale
 		if (paramsRaw["scale"] == undefined)
-			params.scale = "default_scale" in frontmatter ? frontmatter["default_scale"] : 1
+			params.scale = "default_scale" in frontmatter ? frontmatter["default_scale"] : 1;
 		else
-			params.scale = parseFloat(paramsRaw["scale"])
+			params.scale = parseFloat(paramsRaw["scale"]);
 
 		// handle rotation
 		if (paramsRaw["rotat"] == undefined)
-			params.rotat = "default_scale" in frontmatter ? frontmatter["default_scale"] : 0
+			params.rotat = "default_scale" in frontmatter ? frontmatter["default_scale"] : 0;
 		else
-			params.rotat = parseInt(paramsRaw["rotat"])
+			params.rotat = parseInt(paramsRaw["rotat"]);
 
 		if (paramsRaw["rect"] != undefined)
 			params.rect = JSON.parse(paramsRaw["rect"]);
@@ -249,33 +232,12 @@ export class PDFBlockProcessor {
 
 	checkActiveFile(ctx_file: string) {
 		const cur_file = app.workspace.getActiveFile()?.path;
-		if (ctx_file != cur_file)
+		if (cur_file == undefined)
+			return true;
+		else if (ctx_file != cur_file)
 			return false;
-		return true;
-	}
-
-	async requestFile(path: string) {
-		console.log("request " + path)
-		const index = this.fileCache.map(f => f.path).lastIndexOf(path);
-		console.log("get " + index)
-		if (index == -1) {
-			const arrayBuffer = await app.vault.adapter.readBinary(path);
-			const update = this.fileCache.map(f => f.path).lastIndexOf(path);
-			if (update == -1) {
-				this.fileCache.push({
-					path: path,
-					valid: true,
-					pending: false,
-					timestamp: Date.now(),
-					buffer: arrayBuffer
-				});
-			}
-			return arrayBuffer;
-		}
-		else {
-			return this.fileCache[index].buffer;
-		}
-
+		else
+			return true;
 	}
 }
 

@@ -23,7 +23,6 @@
 	},
 	"dependencies": {
 		"canvas": "2.11.2",
-		"pdfjs-dist": "3.2.146",
-		"safe-eval": "0.4.1"
+		"pdfjs-dist": "3.2.146"
 	}
 }
