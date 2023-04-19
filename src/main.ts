@@ -22,11 +22,12 @@ export default class SlideNotePlugin extends Plugin {
 
 	registerPlugin() {
 		let processor = new PDFBlockProcessor(this);
-		this.registerMarkdownCodeBlockProcessor(
+		let handler = this.registerMarkdownCodeBlockProcessor(
 			"slide",
 			async (src, el, ctx) =>
 				processor.codeProcessCallBack(src, el, ctx)
 		);
+		handler.sortOrder = -100;
 	}
 
 	onunload() {

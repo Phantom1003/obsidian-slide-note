@@ -1,8 +1,9 @@
 import * as pdfjs from "pdfjs-dist";
 import {FrontMatterCache, MarkdownPostProcessorContext, Notice} from "obsidian";
 import SlideNotePlugin from '../main';
+import { PDFBlockRenderer } from "./renderer";
 
-interface PDFBlockParameters {
+export interface PDFBlockParameters {
 	file: string;
 	page: Array<number>;
 	link: boolean;
@@ -21,132 +22,15 @@ export class PDFBlockProcessor {
 
 	async codeProcessCallBack(src: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 		const frontmatter = app.metadataCache.getCache(ctx.sourcePath)?.frontmatter as FrontMatterCache
-		let parameters = null;
+		let params = null;
 		try {
-			parameters = await this.parseParameters(src, frontmatter);
+			params = await this.parseParameters(src, frontmatter);
+			const render = new PDFBlockRenderer(el, params, ctx.sourcePath, this.plugin.settings);
+			render.load();
+			ctx.addChild(render);
 		} catch (e) {
 			const p = el.createEl("p", {text: "[SlideNote] Invalid Parameters: " + e.message});
 			p.style.color = "red";
-		}
-
-		// render PDF pages
-		if (parameters !== null) {
-			try {
-				// read PDF
-				const arrayBuffer = await app.vault.adapter.readBinary(parameters.file);
-				const buffer = Buffer.from(arrayBuffer);
-
-				if (!this.checkActiveFile(ctx.sourcePath))
-					return
-
-				const document = await pdfjs.getDocument(buffer).promise;
-
-				if (!this.checkActiveFile(ctx.sourcePath))
-					return
-
-				// page parameter as trigger for whole pdf, 0 = all pages
-				if ((<number[]>parameters.page).includes(0)) {
-					const pagesArray = [];
-					for (let i = 1; i <= document.numPages; i++) {
-						pagesArray.push(i);
-					}
-					parameters.page = pagesArray;
-				}
-
-				// Read pages
-				for (const pageNumber of <number[]>parameters.page) {
-					if (!this.checkActiveFile(ctx.sourcePath))
-						return
-
-					const page = await document.getPage(pageNumber);
-					let host = el;
-
-					// Create hyperlink for Page
-					if (parameters.link) {
-						const href = el.createEl("a");
-						href.href = parameters.file + "#page=" + pageNumber;
-						href.className = "internal-link";
-
-						host = href;
-					}
-
-					// Get Viewport
-					const offsetX = parameters.rect[0] == -1 ?
-						0 : Math.floor(parameters.rect[0] * -1 * parameters.scale);
-					const offsetY = parameters.rect[1] == -1 ?
-						0 : Math.floor(parameters.rect[1] * -1 * parameters.scale);
-
-					// Render Canvas
-					const canvas = host.createEl("canvas");
-					if (parameters.scale == 1) {
-						canvas.style.width = "100%";
-					}
-
-					if (!this.checkActiveFile(ctx.sourcePath))
-						return
-
-					const context = canvas.getContext("2d");
-
-					const baseView = page.getViewport({scale: 1.0});
-					const baseScale = canvas.clientWidth ? canvas.clientWidth / baseView.width : 1;
-
-					const viewport = page.getViewport({
-						scale: baseScale * parameters.scale,
-						rotation: parameters.rotat,
-						offsetX: offsetX,
-						offsetY: offsetY,
-					});
-
-					if (parameters.rect[0] == -1) {
-						canvas.height = viewport.height;
-						canvas.width = viewport.width;
-					} else {
-						canvas.height = Math.floor(parameters.rect[2] * parameters.scale);
-						canvas.width = Math.floor(parameters.rect[3] * parameters.scale);
-					}
-					const renderContext = {
-						canvasContext: context,
-						viewport: viewport,
-					};
-
-					if (!this.checkActiveFile(ctx.sourcePath))
-						return
-
-					await page.render(renderContext).promise.then(
-						() => {
-							if (parameters.annot != "" && this.plugin.settings.allow_annotations) {
-								// new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
-								try {
-									const annots = new Function(
-										"ctx", "scale", "h", "w",
-										`	// prologue
-											function H(n) { 
-												if (n > 0 && n < 1) return n * h * scale;
-												else return n * scale;
-											}
-											function W(n) {
-												if (n > 0 && n < 1) return n * w * scale;
-												else return n * scale;
-											}
-											ctx.font=\`\${20 * scale}px Arial\`
-											// user input
-											${parameters.annot}
-										`
-									)
-									annots(context, baseScale * parameters.scale, baseView.height, baseView.width)
-								} catch (error) {
-									throw new Error(`Annotation Failed: ${error}`);
-								}
-
-							}
-						}
-					)
-
-				}
-			} catch (error) {
-				const p = el.createEl("p", {text: "[SlideNote] Render Error: " + error});
-				p.style.color = "red";
-			}
 		}
 	}
 
@@ -228,16 +112,6 @@ export class PDFBlockProcessor {
 
 		// console.log(params)
 		return params;
-	}
-
-	checkActiveFile(ctx_file: string) {
-		const cur_file = app.workspace.getActiveFile()?.path;
-		if (cur_file == undefined)
-			return true;
-		else if (ctx_file != cur_file)
-			return false;
-		else
-			return true;
 	}
 }
 
