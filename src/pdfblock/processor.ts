@@ -1,4 +1,5 @@
 import * as pdfjs from "pdfjs-dist";
+import safeEval from "safe-eval";
 import {FrontMatterCache, MarkdownPostProcessorContext, Notice} from "obsidian";
 import SlideNotePlugin from '../main'
 
@@ -76,8 +77,8 @@ export class PDFBlockProcessor {
 
 					const context = canvas.getContext("2d");
 
-					const baseViewportWidth = page.getViewport({scale: 1.0}).width;
-					const baseScale = canvas.clientWidth ? canvas.clientWidth / baseViewportWidth : 1;
+					const baseView = page.getViewport({scale: 1.0});
+					const baseScale = canvas.clientWidth ? canvas.clientWidth / baseView.width : 1;
 
 					const viewport = page.getViewport({
 						scale: baseScale * parameters.scale,
@@ -98,11 +99,25 @@ export class PDFBlockProcessor {
 						viewport: viewport,
 					};
 					await page.render(renderContext).promise.then(
-						function () {
+						() => {
 							if (parameters.annot != "") {
 								new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
-								const ctx = context
-								eval(parameters.annot)
+								let ctx = {
+									ctx: context,
+									scale: baseScale * parameters.scale,
+									h: baseView.height,
+									w: baseView.width,
+									ScalePixelPos: function (num: number) { return baseScale * parameters.scale * num },
+									PctH: function (p: number) { return p * baseView.height * baseScale * parameters.scale },
+									PctW: function (p: number) { return p * baseView.width * baseScale * parameters.scale }
+								}
+								try {
+									const prologue = "ctx.font=`${20*scale}px Arial`;"
+									safeEval(prologue + parameters.annot, ctx)
+								} catch (error) {
+									throw new Error("Annotation: " + error)
+								}
+
 							}
 						}
 					)
