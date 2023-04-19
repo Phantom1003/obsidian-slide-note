@@ -23,6 +23,17 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 		this.settings = settings;
 	}
 
+	onload() {
+		this.render();
+		this.registerEvent(
+			app.vault.on("modify", (file) => {
+				if (file.path == this.params.file ) {
+					this.render();
+				}
+			})
+		)
+	}
+
 	async render() {
 		this.el.innerHTML = "";
 		// render PDF pages
@@ -156,15 +167,4 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 			return true;
 	}
 
-	onload() {
-		this.render();
-		this.registerEvent(
-			app.vault.on("modify", (file) => {
-				if (file.extension == "pdf" ) {
-					console.log("Here")
-					this.render();
-				}
-			})
-		)
-	}
 }
