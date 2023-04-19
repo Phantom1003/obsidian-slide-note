@@ -31,7 +31,7 @@ export class SlideNoteSettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Allow execute additional annotations")
 			.setDesc("[WARNING] This feature may introduce security problem, only use on your personal annotations! When turned on, you can add text or draw on the slides.")
-			.addToggle(toggle => toggle.setValue(this.plugin.settings.default_link)
+			.addToggle(toggle => toggle.setValue(this.plugin.settings.allow_annotations)
 				.onChange((value) => {
 					this.plugin.settings.allow_annotations = value;
 					this.plugin.saveSettings();
