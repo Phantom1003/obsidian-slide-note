@@ -23,7 +23,7 @@ export default class SlideNotePlugin extends Plugin {
 	registerPDFProcessor() {
 		let processor = new PDFBlockProcessor(this);
 		let handler = this.registerMarkdownCodeBlockProcessor(
-			"slide",
+			"slide-note",
 			async (src, el, ctx) =>
 				processor.codeProcessCallBack(src, el, ctx)
 		);

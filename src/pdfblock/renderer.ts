@@ -79,7 +79,6 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 					// Render Canvas
 					const canvas = host.createEl("canvas");
-
 					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
 
 					if (!this.checkActiveFile(this.note))
