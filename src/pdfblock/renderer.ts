@@ -66,70 +66,80 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						host = href;
 					}
 
-					// Get Viewport
-					const offsetX = this.params.rect[0] == -1 ?
-						0 : Math.floor(this.params.rect[0] * -1 * this.params.scale);
-					const offsetY = this.params.rect[1] == -1 ?
-						0 : Math.floor(this.params.rect[1] * -1 * this.params.scale);
-
 					// Render Canvas
 					const canvas = host.createEl("canvas");
-					if (this.params.scale == 1) {
-						canvas.style.width = "100%";
-					}
+					if (canvas.clientWidth == 0)
+						throw new Error("Canvas Error: client has zero width")
+					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
 
 					if (!this.checkActiveFile(this.note))
 						return;
 
 					const context = canvas.getContext("2d");
-
-					const baseView = page.getViewport({scale: 1.0});
-					const baseScale = canvas.clientWidth ? canvas.clientWidth / baseView.width : 1;
-
-					const viewport = page.getViewport({
-						scale: baseScale * this.params.scale,
+					const zoom = 2
+					const offsetX = this.params.rect[0] == -1 ? 0 : - this.params.rect[0];
+					const offsetY = this.params.rect[1] == -1 ? 0 : - this.params.rect[1];
+					const pageview = page.getViewport({
+						scale: zoom,
 						rotation: this.params.rotat,
-						offsetX: offsetX,
-						offsetY: offsetY,
+						offsetX: offsetX * zoom,
+						offsetY: offsetY * zoom,
 					});
 
 					if (this.params.rect[0] == -1) {
-						canvas.height = viewport.height;
-						canvas.width = viewport.width;
+						canvas.height = pageview.height;
+						canvas.width = pageview.width;
 					} else {
-						canvas.height = Math.floor(this.params.rect[2] * this.params.scale);
-						canvas.width = Math.floor(this.params.rect[3] * this.params.scale);
+						canvas.width = Math.floor((this.params.rect[2] - this.params.rect[0]) * zoom);
+						canvas.height = Math.floor((this.params.rect[3] - this.params.rect[1]) * zoom);
 					}
 					const renderContext = {
 						canvasContext: context,
-						viewport: viewport,
+						viewport: pageview,
 					};
 
 					if (!this.checkActiveFile(this.note))
 						return;
 
+					canvas.addEventListener("mousemove", (event)=> {
+						const scaleX = this.params.scale * canvas.clientWidth * zoom / pageview.width
+						const scaleY = this.params.scale * canvas.clientHeight * zoom / pageview.height
+						const baseX = Math.floor(event.offsetX / scaleX)
+						const baseY = Math.floor(event.offsetY / scaleY)
+						app.workspace.trigger("slidenote:mousemove",
+							event.offsetX, event.offsetY,
+							baseX, baseY
+						);
+					});
+
+					canvas.addEventListener("mouseleave", (event)=> {
+						app.workspace.trigger("slidenote:mouseleave");
+					});
+
 					await page.render(renderContext).promise.then(
 						() => {
 							if (this.params.annot != "" && this.settings.allow_annotations) {
 								// new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
+								const scaleX = this.params.scale * canvas.clientWidth * zoom / pageview.width
+								const scaleY = this.params.scale * canvas.clientHeight * zoom / pageview.height
 								try {
 									const annots = new Function(
-										"ctx", "scale", "h", "w",
+										"ctx", "scaleX", "scaleY", "h", "w",
 										`	// prologue
 											function H(n) { 
-												if (n > 0 && n < 1) return n * h * scale;
-												else return n * scale;
+												if (n > 0 && n < 1) return n * h * scaleY;
+												else return n * scaleY;
 											}
 											function W(n) {
-												if (n > 0 && n < 1) return n * w * scale;
-												else return n * scale;
+												if (n > 0 && n < 1) return n * w * scaleX;
+												else return n * scaleX;
 											}
-											ctx.font=\`\${20 * scale}px Arial\`
+											ctx.font=\`\${50 * scaleX}px Arial\`
 											// user input
 											${this.params.annot}
 										`
 									);
-									annots(context, baseScale * this.params.scale, baseView.height, baseView.width);
+									annots(context, scaleX, scaleY, pageview.height, pageview.width);
 								} catch (error) {
 									throw new Error(`Annotation Failed: ${error}`);
 								}

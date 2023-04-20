@@ -14,13 +14,13 @@ export default class SlideNotePlugin extends Plugin {
 		await this.loadSettings();
 		pdfjs.GlobalWorkerOptions.workerSrc = worker;
 
-		this.registerPlugin();
-		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+		this.registerPDFProcessor();
+		this.registerCursorPosition();
 
 		this.addSettingTab(new SlideNoteSettingsTab(this.app, this));
 	}
 
-	registerPlugin() {
+	registerPDFProcessor() {
 		let processor = new PDFBlockProcessor(this);
 		let handler = this.registerMarkdownCodeBlockProcessor(
 			"slide",
@@ -28,6 +28,17 @@ export default class SlideNotePlugin extends Plugin {
 				processor.codeProcessCallBack(src, el, ctx)
 		);
 		handler.sortOrder = -100;
+	}
+
+	registerCursorPosition() {
+
+		const cursorPos = this.addStatusBarItem();
+		this.registerEvent(this.app.workspace.on("slidenote:mousemove", (x, y, xp, yp) => {
+			cursorPos.setText(`[${x},${y}] [${xp},${yp}]`)
+		}));
+		this.registerEvent(this.app.workspace.on("slidenote:mouseleave", () => {
+			cursorPos.setText("")
+		}));
 	}
 
 	onunload() {
