@@ -75,7 +75,7 @@ export class PDFBlockProcessor {
 
 		// handle pages
 		if (paramsRaw["page"] == undefined)
-			paramsRaw["page"] = "default_page" in frontmatter ? frontmatter["default_page"] : "0";
+			paramsRaw["page"] = frontmatter && "default_page" in frontmatter ? frontmatter["default_page"] : "0";
 		const pages = paramsRaw["page"].split(",");
 		for (let i = 0; i < pages.length; i++) {
 			if (pages[i].contains("-")) {
@@ -91,19 +91,19 @@ export class PDFBlockProcessor {
 
 		// handle link
 		if (paramsRaw["link"] == undefined)
-			params.link = "default_link" in frontmatter ? frontmatter["default_link"] : this.plugin.settings.default_link;
+			params.link = frontmatter && "default_link" in frontmatter ? frontmatter["default_link"] : this.plugin.settings.default_link;
 		else
 			params.link = paramsRaw["link"].toLowerCase() === 'true';
 
 		// handle scale
 		if (paramsRaw["scale"] == undefined)
-			params.scale = "default_scale" in frontmatter ? frontmatter["default_scale"] : 1;
+			params.scale = frontmatter && "default_scale" in frontmatter ? frontmatter["default_scale"] : 1;
 		else
 			params.scale = parseFloat(paramsRaw["scale"]);
 
 		// handle rotation
 		if (paramsRaw["rotat"] == undefined)
-			params.rotat = "default_scale" in frontmatter ? frontmatter["default_scale"] : 0;
+			params.rotat = frontmatter && "default_scale" in frontmatter ? frontmatter["default_scale"] : 0;
 		else
 			params.rotat = parseInt(paramsRaw["rotat"]);
 
