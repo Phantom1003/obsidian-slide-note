@@ -31,10 +31,15 @@ export default class SlideNotePlugin extends Plugin {
 	}
 
 	registerCursorPosition() {
-
 		const cursorPos = this.addStatusBarItem();
 		this.registerEvent(this.app.workspace.on("slidenote:mousemove", (x, y, xp, yp) => {
-			cursorPos.setText(`[${x},${y}] [${xp},${yp}]`)
+			cursorPos.setText(`[${xp},${yp}]`)
+		}));
+		let last_xp = 0, last_yp = 0
+		this.registerEvent(this.app.workspace.on("slidenote:mouseup", (x, y, xp, yp) => {
+			navigator.clipboard.writeText(`W(${last_xp}), H(${last_yp}), W(${xp - last_xp}), H(${yp - last_yp})`)
+			last_xp = xp
+			last_yp = yp
 		}));
 		this.registerEvent(this.app.workspace.on("slidenote:mouseleave", () => {
 			cursorPos.setText("")

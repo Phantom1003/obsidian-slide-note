@@ -79,8 +79,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 					// Render Canvas
 					const canvas = host.createEl("canvas");
-					if (canvas.clientWidth == 0)
-						throw new Error("Canvas Error: client has zero width")
+
 					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
 
 					if (!this.checkActiveFile(this.note))
@@ -113,6 +112,17 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					if (!this.checkActiveFile(this.note))
 						return;
 
+					canvas.addEventListener("mouseup", (event)=> {
+						const scale2screenX = zoom * canvas.clientWidth / effectWidth
+						const scale2screenY = zoom * canvas.clientHeight / effectHeight
+						const baseX = Math.floor(event.offsetX / scale2screenX)
+						const baseY = Math.floor(event.offsetY / scale2screenY)
+						app.workspace.trigger("slidenote:mouseup",
+							event.offsetX, event.offsetY,
+							baseX, baseY
+						);
+					});
+
 					canvas.addEventListener("mousemove", (event)=> {
 						const scale2screenX = zoom * canvas.clientWidth / effectWidth
 						const scale2screenY = zoom * canvas.clientHeight / effectHeight
@@ -131,26 +141,23 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					await page.render(renderContext).promise.then(
 						() => {
 							if (this.params.annot != "" && this.settings.allow_annotations) {
-								// new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
-								const scale2slideX = zoom * canvas.clientWidth / effectWidth / this.params.scale
-								const scale2slideY = zoom * canvas.clientHeight / effectHeight / this.params.scale
 								try {
 									const annots = new Function(
-										"ctx", "zoom", "scale2slideX", "scale2slideY", "w", "h",
+										"ctx", "zoom", "w", "h",
 										`
 											function H(n) { 
-												if (n > 0 && n < 1) return n * zoom * h * scale2slideY;
-												else return n * zoom * scale2slideY;
+												if (n > 0 && n < 1) return n * zoom * h;
+												else return n * zoom;
 											}
 											function W(n) {
-												if (n > 0 && n < 1) return n * zoom * w * scale2slideX;
-												else return n * zoom * scale2slideX;
+												if (n > 0 && n < 1) return n * zoom * w;
+												else return n * zoom;
 											}
 											ctx.font=\`\${25 * zoom}px Arial\`
 											${this.params.annot}
 										`
 									);
-									annots(context, zoom, scale2slideX, scale2slideY, effectWidth / zoom, effectHeight / zoom);
+									annots(context, zoom, effectWidth / zoom, effectHeight / zoom);
 								} catch (error) {
 									throw new Error(`Annotation Failed: ${error}`);
 								}
