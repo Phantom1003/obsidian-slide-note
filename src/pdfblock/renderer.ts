@@ -97,13 +97,14 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						offsetY: offsetY * zoom,
 					});
 
-					if (this.params.rect[0] == -1) {
-						canvas.height = pageview.height;
-						canvas.width = pageview.width;
-					} else {
-						canvas.width = Math.floor((this.params.rect[2] - this.params.rect[0]) * zoom);
-						canvas.height = Math.floor((this.params.rect[3] - this.params.rect[1]) * zoom);
-					}
+					const effectWidth = this.params.rect[0] == -1 ?
+						pageview.width : Math.floor((this.params.rect[2] - this.params.rect[0]) * zoom);
+
+					const effectHeight = this.params.rect[1] == -1 ?
+						pageview.height : Math.floor((this.params.rect[3] - this.params.rect[1]) * zoom);
+					canvas.width = effectWidth;
+					canvas.height = effectHeight;
+
 					const renderContext = {
 						canvasContext: context,
 						viewport: pageview,
@@ -113,10 +114,10 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						return;
 
 					canvas.addEventListener("mousemove", (event)=> {
-						const scaleX = this.params.scale * canvas.clientWidth * zoom / pageview.width
-						const scaleY = this.params.scale * canvas.clientHeight * zoom / pageview.height
-						const baseX = Math.floor(event.offsetX / scaleX)
-						const baseY = Math.floor(event.offsetY / scaleY)
+						const scale2screenX = zoom * canvas.clientWidth / effectWidth
+						const scale2screenY = zoom * canvas.clientHeight / effectHeight
+						const baseX = Math.floor(event.offsetX / scale2screenX)
+						const baseY = Math.floor(event.offsetY / scale2screenY)
 						app.workspace.trigger("slidenote:mousemove",
 							event.offsetX, event.offsetY,
 							baseX, baseY
@@ -131,26 +132,25 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						() => {
 							if (this.params.annot != "" && this.settings.allow_annotations) {
 								// new Notice("[SlideNote] Page " + pageNumber + " has annotations:\n" + parameters.annot)
-								const scaleX = this.params.scale * canvas.clientWidth * zoom / pageview.width
-								const scaleY = this.params.scale * canvas.clientHeight * zoom / pageview.height
+								const scale2slideX = zoom * canvas.clientWidth / effectWidth / this.params.scale
+								const scale2slideY = zoom * canvas.clientHeight / effectHeight / this.params.scale
 								try {
 									const annots = new Function(
-										"ctx", "scaleX", "scaleY", "h", "w",
-										`	// prologue
+										"ctx", "zoom", "scale2slideX", "scale2slideY", "w", "h",
+										`
 											function H(n) { 
-												if (n > 0 && n < 1) return n * h * scaleY;
-												else return n * scaleY;
+												if (n > 0 && n < 1) return n * zoom * h * scale2slideY;
+												else return n * zoom * scale2slideY;
 											}
 											function W(n) {
-												if (n > 0 && n < 1) return n * w * scaleX;
-												else return n * scaleX;
+												if (n > 0 && n < 1) return n * zoom * w * scale2slideX;
+												else return n * zoom * scale2slideX;
 											}
-											ctx.font=\`\${50 * scaleX}px Arial\`
-											// user input
+											ctx.font=\`\${25 * zoom}px Arial\`
 											${this.params.annot}
 										`
 									);
-									annots(context, scaleX, scaleY, pageview.height, pageview.width);
+									annots(context, zoom, scale2slideX, scale2slideY, effectWidth / zoom, effectHeight / zoom);
 								} catch (error) {
 									throw new Error(`Annotation Failed: ${error}`);
 								}
