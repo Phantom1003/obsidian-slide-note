@@ -1,5 +1,5 @@
 import * as pdfjs from "pdfjs-dist";
-import {FrontMatterCache, MarkdownPostProcessorContext, Notice} from "obsidian";
+import { FrontMatterCache, MarkdownPostProcessorContext } from "obsidian";
 import SlideNotePlugin from '../main';
 import { PDFBlockRenderer } from "./renderer";
 
@@ -11,6 +11,7 @@ export interface PDFBlockParameters {
 	rotat: number;
 	rect: Array<number>;
 	annot: string;
+	note: string;
 }
 
 export class PDFBlockProcessor {
@@ -39,6 +40,7 @@ export class PDFBlockProcessor {
 		const keywords = ["file", "page", "link", "scale", "rotat", "rect"];
 		const paramsRaw: { [k: string]: string } = {};
 		const annot: Array<string> = [];
+		const note: Array<string> = [];
 
 		for (let i = 0; i < lines.length; i++) {
 			const words = lines[i].trim().split(":")
@@ -47,7 +49,10 @@ export class PDFBlockProcessor {
 					paramsRaw[words[0]] = words[1].trim();
 			}
 			else {
-				annot.push(lines[i].trim());
+				if (lines[i].trim().startsWith("@"))
+					annot.push(lines[i].trim().slice(1));
+				else
+					note.push(lines[i]);
 			}
 		}
 
@@ -58,7 +63,8 @@ export class PDFBlockProcessor {
 			scale: 0,
 			rotat: 0,
 			rect: [-1, -1, -1, -1],
-			annot: annot.join("\n")
+			annot: annot.join("\n"),
+			note: note.join("\n")
 		};
 
 		// handle file

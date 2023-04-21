@@ -1,25 +1,25 @@
 import * as pdfjs from "pdfjs-dist";
 
-import { MarkdownRenderChild } from "obsidian";
+import {MarkdownPreviewView, MarkdownRenderChild} from "obsidian";
 import { PDFBlockParameters } from "./processor";
 import { SlideNoteSettings } from "../settings";
 
 export class PDFBlockRenderer extends MarkdownRenderChild {
 	el: HTMLElement
 	params: PDFBlockParameters
-	note: string
+	sourcePath: string
 	settings: SlideNoteSettings
 	public constructor(
 		el: HTMLElement,
 		params: PDFBlockParameters,
-		note: string,
+		sourcePath: string,
 		settings: SlideNoteSettings
 
 	) {
 		super(el);
 		this.el = el;
 		this.params = params;
-		this.note = note;
+		this.sourcePath = sourcePath;
 		this.settings = settings;
 	}
 
@@ -43,12 +43,12 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 				const arrayBuffer = await app.vault.adapter.readBinary(this.params.file);
 				const buffer = Buffer.from(arrayBuffer);
 
-				if (!this.checkActiveFile(this.note))
+				if (!this.checkActiveFile(this.sourcePath))
 					return;
 
 				const document = await pdfjs.getDocument(buffer).promise;
 
-				if (!this.checkActiveFile(this.note))
+				if (!this.checkActiveFile(this.sourcePath))
 					return;
 
 				// page parameter as trigger for whole pdf, 0 = all pages
@@ -62,7 +62,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 				// Read pages
 				for (const pageNumber of <number[]>this.params.page) {
-					if (!this.checkActiveFile(this.note))
+					if (!this.checkActiveFile(this.sourcePath))
 						return;
 
 					const page = await document.getPage(pageNumber);
@@ -81,7 +81,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					const canvas = host.createEl("canvas");
 					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
 
-					if (!this.checkActiveFile(this.note))
+					if (!this.checkActiveFile(this.sourcePath))
 						return;
 
 					const context = canvas.getContext("2d");
@@ -108,7 +108,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						viewport: pageview,
 					};
 
-					if (!this.checkActiveFile(this.note))
+					if (!this.checkActiveFile(this.sourcePath))
 						return;
 
 					canvas.addEventListener("mouseup", (event)=> {
@@ -136,7 +136,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					canvas.addEventListener("mouseleave", (event)=> {
 						app.workspace.trigger("slidenote:mouseleave");
 					});
-
+					MarkdownPreviewView.renderMarkdown(this.params.note, host, this.sourcePath, this)
 					await page.render(renderContext).promise.then(
 						() => {
 							if (this.params.annot != "" && this.settings.allow_annotations) {
