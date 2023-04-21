@@ -23,12 +23,12 @@ You can involve this plugin by writing a code block with the `slide-note` type.
 
 `````markdown
 ```slide-note
-file: example.pdf      # file path 
-page: 2, 4-5, 8       # render page, default is all pages
-scale: 0.2        # page scaling, default `1.0`
-link: true        # page hover preview, default `false`
-rotat: 90         # page rotation, default `0`
-rect: [0, 0, 100, 100]     # display area, default is full page
+file: example.pdf		# file path 
+page: 2, 4-5, 8			# render page, default is all pages
+scale: 0.2			# page scaling, default `1.0`
+link: true			# page hover preview, default `false`
+rotat: 90			# page rotation, default `0`
+rect: [0, 0, 100, 100]		# display area, default is full page
 ```
 `````
 
@@ -47,4 +47,6 @@ And all the other statements will be treated as your notes, this makes sure that
 Therefore, when you link them in other places, you can get them all.
 
 In the end, your notes should look like the following:
+
 ![advance usage](doc/advance.png)
+
