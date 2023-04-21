@@ -38,8 +38,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 		this.el.innerHTML = "";
 		if (this.params !== null) {
 			try {
-				const arrayBuffer = await app.vault.adapter.readBinary(this.params.file);
-				const buffer = Buffer.from(arrayBuffer);
+				const buffer = await app.vault.adapter.readBinary(this.params.file);
 
 				if (!this.checkActiveFile(this.sourcePath))
 					return;
