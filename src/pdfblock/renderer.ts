@@ -36,10 +36,8 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 	async render() {
 		this.el.innerHTML = "";
-		// render PDF pages
 		if (this.params !== null) {
 			try {
-				// read PDF
 				const arrayBuffer = await app.vault.adapter.readBinary(this.params.file);
 				const buffer = Buffer.from(arrayBuffer);
 
@@ -51,33 +49,27 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 				if (!this.checkActiveFile(this.sourcePath))
 					return;
 
-				// page parameter as trigger for whole pdf, 0 = all pages
-				if ((<number[]>this.params.page).includes(0)) {
-					const pagesArray = [];
-					for (let i = 1; i <= document.numPages; i++) {
-						pagesArray.push(i);
-					}
-					this.params.page = pagesArray;
+				if (this.params.page.includes(0)) {
+					this.params.page = Array.from(
+						{length: document.numPages},
+						(_, i) => i + 1
+					);
 				}
 
-				// Read pages
-				for (const pageNumber of <number[]>this.params.page) {
+				for (const pageNumber of this.params.page) {
 					if (!this.checkActiveFile(this.sourcePath))
 						return;
 
 					const page = await document.getPage(pageNumber);
-					let host = this.el;
+					let host = this.el.createEl("div");
 
-					// Create hyperlink for Page
 					if (this.params.link) {
-						const href = this.el.createEl("a");
+						const href = host.createEl("a");
 						href.href = this.params.file + "#page=" + pageNumber;
 						href.className = "internal-link";
-
 						host = href;
 					}
 
-					// Render Canvas
 					const canvas = host.createEl("canvas");
 					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
 
@@ -136,7 +128,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					canvas.addEventListener("mouseleave", (event)=> {
 						app.workspace.trigger("slidenote:mouseleave");
 					});
-					MarkdownPreviewView.renderMarkdown(this.params.note, host, this.sourcePath, this)
+					MarkdownPreviewView.renderMarkdown(this.params.note, this.el, this.sourcePath, this)
 					await page.render(renderContext).promise.then(
 						() => {
 							if (this.params.annot != "" && this.settings.allow_annotations) {
