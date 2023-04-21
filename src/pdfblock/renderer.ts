@@ -128,7 +128,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					canvas.addEventListener("mouseleave", (event)=> {
 						app.workspace.trigger("slidenote:mouseleave");
 					});
-					MarkdownPreviewView.renderMarkdown(this.params.note, this.el, this.sourcePath, this)
+
 					await page.render(renderContext).promise.then(
 						() => {
 							if (this.params.annot != "" && this.settings.allow_annotations) {
@@ -158,6 +158,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					)
 
 				}
+				MarkdownPreviewView.renderMarkdown(this.params.note, this.el, this.sourcePath, this);
 			} catch (error) {
 				const p = this.el.createEl("p", {text: "[SlideNote] Render Error: " + error});
 				p.style.color = "red";
