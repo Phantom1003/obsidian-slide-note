@@ -1,3 +1,56 @@
 .popover.hover-popover > .pdf-embed {
 	max-width: 100%;
 }
+
+.markdown-preview-view pre,
+.markdown-preview-view code :not(pre) {
+	overflow-x: auto;
+	white-space: pre;
+}
+
+.markdown-rendered div > pre > code {
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
+.markdown-preview-view code[class*="lang"] {
+	overflow-x: auto;
+	white-space: pre;
+}
+
+.slide-note-loading-hook {
+	display: flex;
+	width: 100%;
+	height: 300px;
+	color: black;
+	align-items: center;
+	justify-content:center;
+	border-radius: 8px;
+	background-image: linear-gradient(to bottom right, #5761B2, #1FC5A8);
+}
+
+.loader {
+	display: inline-block;
+	width: 80px;
+	height: 80px;
+}
+.loader:after {
+	content: " ";
+	display: block;
+	width: 64px;
+	height: 64px;
+	margin: 8px;
+	border-radius: 50%;
+	border: 6px solid dodgerblue;
+	border-color: #305293 transparent #CCEEFFFF transparent;
+	animation: loader 1.2s linear infinite;
+}
+@keyframes loader {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}

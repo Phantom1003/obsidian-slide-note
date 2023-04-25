@@ -2,6 +2,7 @@ import * as pdfjs from "pdfjs-dist";
 import { FrontMatterCache, MarkdownPostProcessorContext } from "obsidian";
 import SlideNotePlugin from '../main';
 import { PDFBlockRenderer } from "./renderer";
+import { FileCache } from "./cache";
 
 export interface PDFBlockParameters {
 	file: string;
@@ -16,9 +17,11 @@ export interface PDFBlockParameters {
 
 export class PDFBlockProcessor {
 	plugin: SlideNotePlugin;
+	cache: FileCache
 
-	constructor(plugin: SlideNotePlugin) {
+	constructor(plugin: SlideNotePlugin, cache: FileCache) {
 		this.plugin = plugin;
+		this.cache = cache;
 	}
 
 	async codeProcessCallBack(src: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
@@ -26,7 +29,7 @@ export class PDFBlockProcessor {
 		let params = null;
 		try {
 			params = await this.parseParameters(src, frontmatter);
-			const render = new PDFBlockRenderer(el, params, ctx.sourcePath, this.plugin.settings);
+			const render = new PDFBlockRenderer(el, params, ctx.sourcePath, this.plugin.settings, this.cache);
 			render.load();
 			ctx.addChild(render);
 		} catch (e) {

@@ -1,26 +1,29 @@
 import * as pdfjs from "pdfjs-dist";
 
-import {MarkdownPreviewView, MarkdownRenderChild} from "obsidian";
+import { MarkdownPreviewView, MarkdownRenderChild } from "obsidian";
 import { PDFBlockParameters } from "./processor";
 import { SlideNoteSettings } from "../settings";
+import { FileCache } from "./cache";
 
 export class PDFBlockRenderer extends MarkdownRenderChild {
 	el: HTMLElement
 	params: PDFBlockParameters
 	sourcePath: string
 	settings: SlideNoteSettings
+	cache: FileCache
 	public constructor(
 		el: HTMLElement,
 		params: PDFBlockParameters,
 		sourcePath: string,
-		settings: SlideNoteSettings
-
+		settings: SlideNoteSettings,
+		cache: FileCache
 	) {
 		super(el);
 		this.el = el;
 		this.params = params;
 		this.sourcePath = sourcePath;
 		this.settings = settings;
+		this.cache = cache;
 	}
 
 	onload() {
@@ -35,45 +38,41 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 	}
 
 	async init() {
-		const hook = this.el.createEl("p")
-		hook.setText("loading...");
-		hook.style.display = "block";
-		hook.style.width = "100%";
-		hook.style.backgroundColor = "ghostwhite";
-		hook.style.height = "300px";
+		const hook = this.el.createEl("div");
+		hook.addClass("slide-note-loading-hook");
+		const loader = hook.createEl("div");
+		loader.addClass("loader");
 
 		const pos = hook.getBoundingClientRect().bottom;
 		console.log(hook.getBoundingClientRect())
 		if (pos != 0) {
-			console.log(hook.getBoundingClientRect())
-			await this.render();
+			this.render();
 		}
 		else {
-			const hook = this.el.createEl("p")
-			hook.setText("loading...");
-			hook.style.display = "block";
-			hook.style.width = "100%";
-			hook.style.backgroundColor = "ghostwhite";
-			hook.style.height = "300px";
-			// const self = this;
-			async function inView() {
-				if (hook.getBoundingClientRect().bottom != 0) {
-					console.log("It's me!", hook.getBoundingClientRect());
+			const delay = window.setInterval(
+				() => {
+					clearInterval(delay);
+					this.render();
+				},
+				(this.params.page[0] % 15 + 1) * 5000
+			)
 
-					document.removeEventListener("wheel", inView);
-					await this.render();
+			function renderCallBcak() {
+				if (hook.getBoundingClientRect().bottom != 0) {
+					clearInterval(delay);
+					this.render();
 				}
 			}
-			document.addEventListener("wheel", inView.bind(this));
+			document.addEventListener("wheel", renderCallBcak.bind(this));
+			document.addEventListener("touchmove",  renderCallBcak.bind(this));
 		}
-
 	}
 
 	async render() {
 		this.el.innerHTML = "";
 		if (this.params !== null) {
 			try {
-				const buffer = await app.vault.adapter.readBinary(this.params.file);
+				const buffer = await this.cache.get(this.params.file);
 
 				if (!this.checkActiveFile(this.sourcePath))
 					return;

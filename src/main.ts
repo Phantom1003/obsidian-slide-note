@@ -4,6 +4,8 @@ import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 import { PDFBlockProcessor } from "./pdfblock/processor";
+import { FileCache } from "./pdfblock/cache";
+
 
 export default class SlideNotePlugin extends Plugin {
 	settings: SlideNoteSettings;
@@ -21,8 +23,9 @@ export default class SlideNotePlugin extends Plugin {
 	}
 
 	registerPDFProcessor() {
-		let processor = new PDFBlockProcessor(this);
-		let handler = this.registerMarkdownCodeBlockProcessor(
+		const cache = new FileCache(3);
+		const processor = new PDFBlockProcessor(this, cache);
+		const handler = this.registerMarkdownCodeBlockProcessor(
 			"slide-note",
 			async (src, el, ctx) =>
 				processor.codeProcessCallBack(src, el, ctx)
