@@ -24,7 +24,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 	}
 
 	onload() {
-		this.render();
+		this.init();
 		this.registerEvent(
 			app.vault.on("modify", (file) => {
 				if (file.path == this.params.file ) {
@@ -32,6 +32,41 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 				}
 			})
 		)
+	}
+
+	async init() {
+		const hook = this.el.createEl("p")
+		hook.setText("loading...");
+		hook.style.display = "block";
+		hook.style.width = "100%";
+		hook.style.backgroundColor = "ghostwhite";
+		hook.style.height = "300px";
+
+		const pos = hook.getBoundingClientRect().bottom;
+		console.log(hook.getBoundingClientRect())
+		if (pos != 0) {
+			console.log(hook.getBoundingClientRect())
+			await this.render();
+		}
+		else {
+			const hook = this.el.createEl("p")
+			hook.setText("loading...");
+			hook.style.display = "block";
+			hook.style.width = "100%";
+			hook.style.backgroundColor = "ghostwhite";
+			hook.style.height = "300px";
+			// const self = this;
+			async function inView() {
+				if (hook.getBoundingClientRect().bottom != 0) {
+					console.log("It's me!", hook.getBoundingClientRect());
+
+					document.removeEventListener("wheel", inView);
+					await this.render();
+				}
+			}
+			document.addEventListener("wheel", inView.bind(this));
+		}
+
 	}
 
 	async render() {
