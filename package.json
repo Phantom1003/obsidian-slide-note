@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-slide-note",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Lightweight PDF pages extractor :P",
 	"main": "main.js",
 	"scripts": {
