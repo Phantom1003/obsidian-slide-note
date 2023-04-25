@@ -24,4 +24,7 @@ export class FileCache {
 			return buffer;
 		}
 	}
+	invalid(path: string): void {
+		this.map.delete(path)
+	}
 }

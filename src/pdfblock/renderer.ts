@@ -31,6 +31,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 		this.registerEvent(
 			app.vault.on("modify", (file) => {
 				if (file.path == this.params.file ) {
+					this.cache.invalid(file.path)
 					this.render();
 				}
 			})
