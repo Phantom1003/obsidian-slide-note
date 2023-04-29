@@ -19,11 +19,13 @@
 		"esbuild": "0.17.3",
 		"obsidian": "latest",
 		"tslib": "2.4.0",
-		"typescript": "4.7.4"
+		"typescript": "4.7.4",
+		"@types/fabric": "5.3.0"
 	},
 	"dependencies": {
 		"canvas": "2.11.2",
 		"pdfjs-dist": "3.2.146",
-		"lru-cache": "9.1.1"
+		"lru-cache": "9.1.1",
+		"fabric": "5.3.0"
 	}
 }

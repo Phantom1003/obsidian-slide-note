@@ -5,6 +5,7 @@ import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 import { PDFBlockProcessor } from "./pdfblock/processor";
 import { FileCache } from "./pdfblock/cache";
+import { PDFCANVAS_VIEW, PDFCanvasView } from "./pdfview/canvas";
 
 
 export default class SlideNotePlugin extends Plugin {
@@ -12,14 +13,14 @@ export default class SlideNotePlugin extends Plugin {
 
 	async onload() {
 		console.log("SlideNote loading ...");
-
-		await this.loadSettings();
 		pdfjs.GlobalWorkerOptions.workerSrc = worker;
 
-		this.registerPDFProcessor();
-		this.registerCursorPosition();
-
+		await this.loadSettings();
 		this.addSettingTab(new SlideNoteSettingsTab(this.app, this));
+
+		this.registerPDFProcessor();
+
+		this.registerPDFCanvas();
 	}
 
 	registerPDFProcessor() {
@@ -33,24 +34,20 @@ export default class SlideNotePlugin extends Plugin {
 		handler.sortOrder = -100;
 	}
 
-	registerCursorPosition() {
-		const cursorPos = this.addStatusBarItem();
-		this.registerEvent(this.app.workspace.on("slidenote:mousemove", (x, y, xp, yp) => {
-			cursorPos.setText(`[${xp},${yp}]`)
+	registerPDFCanvas() {
+		this.registerEvent(this.app.workspace.on("slidenote:mouseup", (event) => {
+			this.activeCanvas(event.target.toDataURL());
 		}));
-		let last_xp = 0, last_yp = 0
-		this.registerEvent(this.app.workspace.on("slidenote:mouseup", (x, y, xp, yp) => {
-			navigator.clipboard.writeText(`W(${last_xp}), H(${last_yp}), W(${xp - last_xp}), H(${yp - last_yp})`)
-			last_xp = xp
-			last_yp = yp
-		}));
-		this.registerEvent(this.app.workspace.on("slidenote:mouseleave", () => {
-			cursorPos.setText("")
-		}));
+
+		this.registerView(
+			PDFCANVAS_VIEW,
+			(leaf) => new PDFCanvasView(leaf)
+		);
 	}
 
 	onunload() {
 		console.log("SlideNote unloading ...");
+		this.app.workspace.detachLeavesOfType(PDFCANVAS_VIEW);
 	}
 
 	async loadSettings() {
@@ -59,5 +56,18 @@ export default class SlideNotePlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async activeCanvas(src: string) {
+		this.app.workspace.detachLeavesOfType(PDFCANVAS_VIEW);
+
+		await this.app.workspace.getRightLeaf(false).setViewState({
+			type: PDFCANVAS_VIEW,
+			active: true,
+		});
+		const canvas = this.app.workspace.getLeavesOfType(PDFCANVAS_VIEW)[0];
+
+		app.workspace.trigger("slidenote:newcanvas", src);
+		this.app.workspace.revealLeaf(canvas);
 	}
 }

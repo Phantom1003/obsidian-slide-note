@@ -45,7 +45,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 		loader.addClass("loader");
 
 		const pos = hook.getBoundingClientRect().bottom;
-		console.log(hook.getBoundingClientRect())
+
 		if (pos != 0) {
 			this.render();
 		}
@@ -138,29 +138,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						return;
 
 					canvas.addEventListener("mouseup", (event)=> {
-						const scale2screenX = zoom * canvas.clientWidth / effectWidth
-						const scale2screenY = zoom * canvas.clientHeight / effectHeight
-						const baseX = Math.floor(event.offsetX / scale2screenX)
-						const baseY = Math.floor(event.offsetY / scale2screenY)
-						app.workspace.trigger("slidenote:mouseup",
-							event.offsetX, event.offsetY,
-							baseX, baseY
-						);
-					});
-
-					canvas.addEventListener("mousemove", (event)=> {
-						const scale2screenX = zoom * canvas.clientWidth / effectWidth
-						const scale2screenY = zoom * canvas.clientHeight / effectHeight
-						const baseX = Math.floor(event.offsetX / scale2screenX)
-						const baseY = Math.floor(event.offsetY / scale2screenY)
-						app.workspace.trigger("slidenote:mousemove",
-							event.offsetX, event.offsetY,
-							baseX, baseY
-						);
-					});
-
-					canvas.addEventListener("mouseleave", (event)=> {
-						app.workspace.trigger("slidenote:mouseleave");
+						app.workspace.trigger("slidenote:mouseup", event);
 					});
 
 					await page.render(renderContext).promise.then(
