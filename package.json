@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-slide-note",
-	"version": "0.0.2",
-	"description": "Lightweight PDF pages extractor :P",
+	"version": "0.0.3",
+	"description": "Conveniently take notes on PDF course slides :P",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

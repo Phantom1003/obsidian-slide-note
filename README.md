@@ -28,7 +28,7 @@ page: 2, 4-5, 8			# render page, default is all pages
 scale: 0.2			# page scaling, default `1.0`
 link: true			# page hover preview, default `false`
 rotat: 90			# page rotation, default `0`
-rect: [0, 0, 100, 100]		# display area, default is full page
+rect: W(0.069), H(0.113), W(0.861), H(0.337)	# display area, default is full page
 ```
 `````
 
@@ -38,10 +38,10 @@ Besides these basic uses, you can also append more statements in the block to an
 A string starting with @ is a graphic annotation.
 Since the PDF pages are rendered as HTML canvas elements, you can use js/ts codes to append content to the page.
 
-You should also notice that when your mouse over the pages, there is a position coordinate on your status bar.
-Clicking the page will copy the corresponding coordinate into your clipboard.
-
-> Note: This feature is still under development, in the future Slide Note will provide a No-Code interface.
+Slide Note provide a canvas view to help you to generate above code.
+Click the slide page will launch the canvas on the right side.
+You can add path, line, rectangle, text on the slide.
+Once you finish your annotations, click save button to generate the code that used to render your annotations.
 
 And all the other statements will be treated as your notes, this makes sure that all your notes bind with the page in one block.
 Therefore, when you link them in other places, you can get them all.
