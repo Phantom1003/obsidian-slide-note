@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-slide-note",
+	"name": "slide-note",
 	"version": "0.0.3",
 	"description": "Conveniently take notes on PDF course slides :P",
 	"main": "main.js",
