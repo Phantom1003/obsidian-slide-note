@@ -116,8 +116,15 @@ export class PDFBlockProcessor {
 		else
 			params.rotat = parseInt(paramsRaw["rotat"]);
 
-		if (paramsRaw["rect"] != undefined)
-			params.rect = JSON.parse(paramsRaw["rect"]);
+		if (paramsRaw["rect"] != undefined) {
+			const rect = paramsRaw["rect"].split(",");
+			const new_rect = [];
+			new_rect.push(parseFloat(rect[0].trim().slice(2,-1)));
+			new_rect.push(parseFloat(rect[1].trim().slice(2,-1)));
+			new_rect.push(parseFloat(rect[2].trim().slice(2,-1)));
+			new_rect.push(parseFloat(rect[3].trim().slice(2,-1)));
+			params.rect = new_rect;
+		}
 
 		// console.log(params)
 		return params;

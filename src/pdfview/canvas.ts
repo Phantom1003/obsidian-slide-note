@@ -30,6 +30,7 @@ export class PDFCanvasView extends ItemView {
 
 		preview.createEl("h4").setText("Preview:")
 		const image = preview.createEl("img")
+		image.alt = "Click slide to start ...";
 		image.style.position = "absolute";
 		image.style.width = "95%";
 		const canvas = preview.createEl("canvas")
@@ -43,6 +44,22 @@ export class PDFCanvasView extends ItemView {
 
 		drawboard.freeDrawingBrush.color = "rgba(250,230,50,0.5)";
 		drawboard.freeDrawingBrush.width = 10;
+		drawboard.on("selection:created", (event) => {
+			const element = drawboard.getActiveObject()
+			if (element && element.type == "path"){
+				element.setControlsVisibility({
+					bl: false,
+					br: false,
+					mb: false,
+					ml: false,
+					mr: false,
+					mt: false,
+					tl: false,
+					tr: false,
+					mtr: false
+				});
+			}
+		})
 
 		save.createEl("h4").setText("Copy following annotations to your note:")
 		const output = save.createEl("textarea", {attr: {style: "width: 100%"}})
@@ -105,7 +122,6 @@ export class PDFCanvasView extends ItemView {
 			drawboard.setActiveObject(rectangle);
 		});
 		option.createEl("button", {text: "Save", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
-			console.log(drawboard.toDatalessJSON());
 			const fractionDigit = 3;
 			const canvasWidth = drawboard.width;
 			const canvasHeight = drawboard.height;
@@ -147,7 +163,7 @@ export class PDFCanvasView extends ItemView {
 						break;
 					}
 					case "path": {
-						const strokeWidth = (element.strokeWidth / canvasWidth).toFixed(fractionDigit);
+						const strokeWidth = (element.strokeWidth * element.scaleY / canvasWidth).toFixed(fractionDigit);
 						buffer.push("// path");
 						buffer.push(`ctx.strokeStyle = "${element.stroke}";`);
 						buffer.push(`ctx.lineWidth = W(${strokeWidth});`);

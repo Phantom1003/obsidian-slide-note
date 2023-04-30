@@ -112,20 +112,20 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 					const context = canvas.getContext("2d");
 					const zoom = 2
-					const offsetX = this.params.rect[0] == -1 ? 0 : - this.params.rect[0];
-					const offsetY = this.params.rect[1] == -1 ? 0 : - this.params.rect[1];
+					const offsetX = this.params.rect[0] == -1 ? 0 : - this.params.rect[0] * page.view[2] * zoom;
+					const offsetY = this.params.rect[1] == -1 ? 0 : - this.params.rect[1] * page.view[3] * zoom;
 					const pageview = page.getViewport({
 						scale: zoom,
 						rotation: this.params.rotat,
-						offsetX: offsetX * zoom,
-						offsetY: offsetY * zoom,
+						offsetX: offsetX,
+						offsetY: offsetY,
 					});
 
 					const effectWidth = this.params.rect[0] == -1 ?
-						pageview.width : Math.floor((this.params.rect[2] - this.params.rect[0]) * zoom);
+						pageview.width : Math.floor(this.params.rect[2] * page.view[2] * zoom);
 
 					const effectHeight = this.params.rect[1] == -1 ?
-						pageview.height : Math.floor((this.params.rect[3] - this.params.rect[1]) * zoom);
+						pageview.height : Math.floor(this.params.rect[3] * page.view[3] * zoom);
 					canvas.width = effectWidth;
 					canvas.height = effectHeight;
 
