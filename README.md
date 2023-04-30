@@ -21,11 +21,12 @@ Slide Note provides several new features, including:
 
 You can involve this plugin by writing a code block with the `slide-note` type.
 
-`````markdown
+`````yaml
 ```slide-note
 file: example.pdf		# file path 
 page: 2, 4-5, 8			# render page, default is all pages
 scale: 0.2			# page scaling, default `1.0`
+dpi: 2				# DPI level, default `1`
 link: true			# page hover preview, default `false`
 rotat: 90			# page rotation, default `0`
 rect: W(0.069), H(0.113), W(0.861), H(0.337)	# display area, default is full page
