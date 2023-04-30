@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, Notice, WorkspaceLeaf } from "obsidian";
 
 import { fabric } from "fabric";
 
@@ -84,7 +84,6 @@ export class PDFCanvasView extends ItemView {
 			line.setControlsVisibility({
 				bl: false,
 				br: false,
-				mb: false,
 				tl: false,
 				tr: false,
 				mtr: false
@@ -96,9 +95,9 @@ export class PDFCanvasView extends ItemView {
 			const rectangle = new fabric.Rect({
 				width: 100,
 				height: 100,
-				stroke: 'red',
+				stroke: "red",
 				strokeWidth: 3,
-				fill: '',
+				fill: "",
 				strokeUniform: true,
 			});
 			rectangle.setControlsVisibility({ mtr: false });
@@ -106,26 +105,63 @@ export class PDFCanvasView extends ItemView {
 			drawboard.setActiveObject(rectangle);
 		});
 		option.createEl("button", {text: "Save", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
-			console.log(drawboard.toDatalessJSON())
-			const buffer: string[] = []
-			const canvasWidth = drawboard.width
-			const canvasHeight = drawboard.height
-			const elements = drawboard.toDatalessJSON().objects
+			console.log(drawboard.toDatalessJSON());
+			const fractionDigit = 3;
+			const canvasWidth = drawboard.width;
+			const canvasHeight = drawboard.height;
+			const elements = drawboard.toDatalessJSON().objects;
+			const buffer: string[] = [];
 			for (const element of elements) {
 				switch (element.type) {
 					case "rect": {
-						const fractionDigit = 3;
 						const strokeWidth = (element.strokeWidth / canvasWidth).toFixed(fractionDigit);
 						const left = (element.left / canvasWidth).toFixed(fractionDigit);
 						const top= (element.top / canvasHeight).toFixed(fractionDigit);
 						const width = (element.width * element.scaleX / canvasWidth).toFixed(fractionDigit);
 						const height = (element.height * element.scaleY / canvasHeight).toFixed(fractionDigit);
+						buffer.push("// rect");
 						buffer.push(`ctx.strokeStyle = "${element.stroke}";`);
 						buffer.push(`ctx.lineWidth = W(${strokeWidth});`);
 						buffer.push(`ctx.strokeRect(W(${left}), H(${top}), W(${width}), H(${height}));`);
 						break;
 					}
-
+					case "textbox": {
+						const left = (element.left / canvasWidth).toFixed(fractionDigit);
+						const top= ((element.top + element.height * 100/116 ) / canvasHeight).toFixed(fractionDigit);
+						const fontSize = (element.fontSize * element.scaleY / canvasHeight).toFixed(fractionDigit);
+						const fontFamily = element.fontFamily;
+						buffer.push("// textbox");
+						buffer.push(`ctx.fillStyle = "${element.fill}";`);
+						buffer.push(`ctx.font=\`\${H(${fontSize})}px ${fontFamily}\`;`);
+						buffer.push(`ctx.fillText("${element.text}", W(${left}), H(${top}));`);
+						break;
+					}
+					case "line": {
+						const left = (element.left / canvasWidth).toFixed(fractionDigit);
+						const top= (element.top / canvasHeight).toFixed(fractionDigit);
+						const width = (element.width * element.scaleX / canvasWidth).toFixed(fractionDigit);
+						const height = (element.strokeWidth * element.scaleY / canvasHeight).toFixed(fractionDigit);
+						buffer.push("// line");
+						buffer.push(`ctx.fillStyle = "${element.stroke}";`);
+						buffer.push(`ctx.fillRect(W(${left}), H(${top}), W(${width}), H(${height}));`);
+						break;
+					}
+					case "path": {
+						const strokeWidth = (element.strokeWidth / canvasWidth).toFixed(fractionDigit);
+						buffer.push("// path");
+						buffer.push(`ctx.strokeStyle = "${element.stroke}";`);
+						buffer.push(`ctx.lineWidth = W(${strokeWidth});`);
+						buffer.push("ctx.beginPath();");
+						for (const point of element.path) {
+							const x = (point[1]/canvasWidth).toFixed(fractionDigit);
+							const y = (point[2]/canvasHeight).toFixed(fractionDigit);
+							buffer.push(`ctx.lineTo(W(${x}), H(${y}));`);
+						}
+						buffer.push("ctx.stroke();");
+						break;
+					}
+					default:
+						new Notice("SlideNote: Unknown Canvas Type!");
 				}
 			}
 			output.setText(buffer.map((s) => ("@ " + s)).join("\n"));
