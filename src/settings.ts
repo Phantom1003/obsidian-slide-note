@@ -4,6 +4,7 @@ import SlideNotePlugin from './main';
 export class SlideNoteSettings {
 	allow_annotations: boolean = false;
 	default_link: boolean = false;
+	default_dpi: number = 1;
 }
 
 export class SlideNoteSettingsTab extends PluginSettingTab {
@@ -18,6 +19,8 @@ export class SlideNoteSettingsTab extends PluginSettingTab {
         let { containerEl} = this;
 
         containerEl.empty();
+
+		containerEl.createEl('h1', { text: 'Slide Note Settings' });
 
         new Setting(containerEl)
             .setName("Link pages by default")
@@ -36,5 +39,15 @@ export class SlideNoteSettingsTab extends PluginSettingTab {
 					this.plugin.settings.allow_annotations = value;
 					this.plugin.saveSettings();
 				}));
-    }
+
+		new Setting(containerEl)
+			.setName("Default DPI level")
+			.setDesc("Increase the value to improve the resolution of the slide.")
+			.addText(text => text.setValue(this.plugin.settings.default_dpi.toString())
+				.onChange((value) => {
+					this.plugin.settings.default_dpi = parseInt(value);
+					this.plugin.saveSettings();
+				}));
+
+	}
 }

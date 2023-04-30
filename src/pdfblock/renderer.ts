@@ -111,7 +111,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						return;
 
 					const context = canvas.getContext("2d");
-					const zoom = 2
+					const zoom = this.params.dpi;
 					const offsetX = this.params.rect[0] == -1 ? 0 : - this.params.rect[0] * page.view[2] * zoom;
 					const offsetY = this.params.rect[1] == -1 ? 0 : - this.params.rect[1] * page.view[3] * zoom;
 					const pageview = page.getViewport({

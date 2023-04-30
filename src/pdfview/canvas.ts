@@ -33,14 +33,19 @@ export class PDFCanvasView extends ItemView {
 		image.alt = "Click slide to start ...";
 		image.style.position = "absolute";
 		image.style.width = "95%";
+
+		function resize2Image() {
+			drawboard.setHeight(image.innerHeight);
+			drawboard.setWidth(image.innerWidth);
+			drawboard.renderAll();
+		}
+
 		const canvas = preview.createEl("canvas")
 		canvas.style.position = "absolute";
 		const drawboard = new fabric.Canvas(canvas, {
 			isDrawingMode: false,
 		});
-		drawboard.setHeight(image.innerHeight);
-		drawboard.setWidth(image.innerWidth);
-		drawboard.renderAll();
+		resize2Image();
 
 		drawboard.freeDrawingBrush.color = "rgba(250,230,50,0.5)";
 		drawboard.freeDrawingBrush.width = 10;
@@ -70,9 +75,11 @@ export class PDFCanvasView extends ItemView {
 		option.createEl("h4").setText("Options:")
 		option.createEl("button", {text: "Select", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			drawboard.isDrawingMode = false;
+			resize2Image();
 		});
 		option.createEl("button", {text: "Pen", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			drawboard.isDrawingMode = true;
+			resize2Image();
 		});
 		option.createEl("button", {text: "Delete", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			if(drawboard.getActiveObject()){
@@ -92,6 +99,7 @@ export class PDFCanvasView extends ItemView {
 			});
 			drawboard.add(textbox);
 			drawboard.setActiveObject(textbox);
+			resize2Image();
 		});
 		option.createEl("button", {text: "Line", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			const line = new fabric.Line([50, 50, 150, 50], {
@@ -107,6 +115,7 @@ export class PDFCanvasView extends ItemView {
 			});
 			drawboard.add(line);
 			drawboard.setActiveObject(line);
+			resize2Image();
 		});
 		option.createEl("button", {text: "Rect", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			const rectangle = new fabric.Rect({
@@ -120,6 +129,7 @@ export class PDFCanvasView extends ItemView {
 			rectangle.setControlsVisibility({ mtr: false });
 			drawboard.add(rectangle);
 			drawboard.setActiveObject(rectangle);
+			resize2Image();
 		});
 		option.createEl("button", {text: "Save", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			const fractionDigit = 3;
@@ -168,11 +178,13 @@ export class PDFCanvasView extends ItemView {
 						buffer.push(`ctx.strokeStyle = "${element.stroke}";`);
 						buffer.push(`ctx.lineWidth = W(${strokeWidth});`);
 						buffer.push("ctx.beginPath();");
+						const path: string[] = [];
 						for (const point of element.path) {
 							const x = (point[1]/canvasWidth).toFixed(fractionDigit);
 							const y = (point[2]/canvasHeight).toFixed(fractionDigit);
-							buffer.push(`ctx.lineTo(W(${x}), H(${y}));`);
+							path.push(`ctx.lineTo(W(${x}), H(${y}));`);
 						}
+						buffer.push(path.join(" "));
 						buffer.push("ctx.stroke();");
 						break;
 					}
@@ -181,21 +193,17 @@ export class PDFCanvasView extends ItemView {
 				}
 			}
 			output.setText(buffer.map((s) => ("@ " + s)).join("\n"));
-			output.style.height = output.scrollHeight.toString()
+			output.style.height = output.scrollHeight.toString() + "px";
 		});
 
 
 		this.registerEvent(app.workspace.on("slidenote:newcanvas", (src) => {
-			image.src = src
-			drawboard.setHeight(image.innerHeight);
-			drawboard.setWidth(image.innerWidth);
-			drawboard.renderAll();
+			image.src = src;
+			resize2Image();
 		}));
 
 		this.registerEvent(app.workspace.on("resize", (event) => {
-			drawboard.setHeight(image.innerHeight);
-			drawboard.setWidth(image.innerWidth);
-			drawboard.renderAll();
+			resize2Image();
 		}));
 
 	}

@@ -9,6 +9,7 @@ export interface PDFBlockParameters {
 	page: Array<number>;
 	link: boolean;
 	scale: number;
+	dpi: number;
 	rotat: number;
 	rect: Array<number>;
 	annot: string;
@@ -40,7 +41,7 @@ export class PDFBlockProcessor {
 
 	async parseParameters(src: string, frontmatter: FrontMatterCache) {
 		const lines = src.split("\n");
-		const keywords = ["file", "page", "link", "scale", "rotat", "rect"];
+		const keywords = ["file", "page", "link", "scale", "rotat", "rect", "dpi"];
 		const paramsRaw: { [k: string]: string } = {};
 		const annot: Array<string> = [];
 		const note: Array<string> = [];
@@ -63,7 +64,8 @@ export class PDFBlockProcessor {
 			file: "",
 			page: [],
 			link: this.plugin.settings.default_link,
-			scale: 0,
+			scale: 1,
+			dpi: this.plugin.settings.default_dpi,
 			rotat: 0,
 			rect: [-1, -1, -1, -1],
 			annot: annot.join("\n"),
@@ -84,7 +86,7 @@ export class PDFBlockProcessor {
 
 		// handle pages
 		if (paramsRaw["page"] == undefined)
-			paramsRaw["page"] = frontmatter && "default_page" in frontmatter ? frontmatter["default_page"] : "0";
+			paramsRaw["page"] = frontmatter && "default_page" in frontmatter ? frontmatter["default_page"] : ["0"];
 		const pages = paramsRaw["page"].split(",");
 		for (let i = 0; i < pages.length; i++) {
 			if (pages[i].contains("-")) {
@@ -99,22 +101,42 @@ export class PDFBlockProcessor {
 		}
 
 		// handle link
-		if (paramsRaw["link"] == undefined)
-			params.link = frontmatter && "default_link" in frontmatter ? frontmatter["default_link"] : this.plugin.settings.default_link;
-		else
+		if (paramsRaw["link"] == undefined) {
+			if (frontmatter && "default_link" in frontmatter)
+				params.link = frontmatter["default_link"];
+		}
+		else {
 			params.link = paramsRaw["link"].toLowerCase() === 'true';
+		}
 
 		// handle scale
-		if (paramsRaw["scale"] == undefined)
-			params.scale = frontmatter && "default_scale" in frontmatter ? frontmatter["default_scale"] : 1;
-		else
+		if (paramsRaw["scale"] == undefined) {
+			if (frontmatter && "default_scale" in frontmatter)
+				params.scale = frontmatter["default_scale"];
+		}
+		else {
 			params.scale = parseFloat(paramsRaw["scale"]);
+		}
+
+		// handle dpi
+		if (paramsRaw["dpi"] == undefined) {
+			if (frontmatter && "default_dpi" in frontmatter)
+				params.dpi = frontmatter["default_dpi"];
+		}
+		else {
+			params.dpi = parseInt(paramsRaw["dpi"]);
+		}
 
 		// handle rotation
-		if (paramsRaw["rotat"] == undefined)
-			params.rotat = frontmatter && "default_scale" in frontmatter ? frontmatter["default_scale"] : 0;
-		else
+		if (paramsRaw["rotat"] == undefined) {
+			if (frontmatter && "default_scale" in frontmatter) {
+				params.rotat = frontmatter["default_scale"];
+			}
+		}
+		else {
 			params.rotat = parseInt(paramsRaw["rotat"]);
+		}
+
 
 		if (paramsRaw["rect"] != undefined) {
 			const rect = paramsRaw["rect"].split(",");
