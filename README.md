@@ -4,8 +4,8 @@ This repository maintains an Obsidian plugin that can help you take notes for yo
 
 With this plugin you can write plaintext notes, and:
 
-- keep binding with the related information
-- render the slide and your annotations together
+- keep binding with the slides
+- render the slide and your graphic annotations together
 - make your notes decouple with the heavy tools
 
 This plugin is inspired by the [better-pdf](https://github.com/MSzturc/obsidian-better-pdf-plugin), but beyond rendering PDF pages.
@@ -14,7 +14,7 @@ Slide Note provides several new features, including:
 - better pdf hover preview
 - graphic annotation support
 - per-file frontmatter configuration
-- performance optimization for huge pages
+- performance optimization for the huge number of pages
 - automatic rerender when the pdf file has been modified
 
 ## Grammar
@@ -39,10 +39,10 @@ Besides these basic uses, you can also append more statements in the block to an
 A string starting with @ is a graphic annotation.
 Since the PDF pages are rendered as HTML canvas elements, you can use js/ts codes to append content to the page.
 
-Slide Note provide a canvas view to help you to generate above code.
+Slide Note provides a canvas view to help you to generate the above code.
 Click the slide page will launch the canvas on the right side.
 You can add path, line, rectangle, text on the slide.
-Once you finish your annotations, click save button to generate the code that used to render your annotations.
+Once you finish your annotations, click save button to generate the code that is used to render your annotations.
 
 And all the other statements will be treated as your notes, this makes sure that all your notes bind with the page in one block.
 Therefore, when you link them in other places, you can get them all.

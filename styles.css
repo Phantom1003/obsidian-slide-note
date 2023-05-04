@@ -2,23 +2,6 @@
 	max-width: 100%;
 }
 
-.markdown-preview-view pre,
-.markdown-preview-view code :not(pre) {
-	overflow-x: auto;
-	white-space: pre;
-}
-
-.markdown-rendered div > pre > code {
-	white-space: pre-wrap;
-	word-break: break-word;
-	overflow-wrap: anywhere;
-}
-
-.markdown-preview-view code[class*="lang"] {
-	overflow-x: auto;
-	white-space: pre;
-}
-
 .slide-note-loading-hook {
 	display: flex;
 	width: 100%;
