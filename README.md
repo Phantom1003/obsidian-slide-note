@@ -11,7 +11,6 @@ With this plugin you can write plaintext notes, and:
 This plugin is inspired by the [better-pdf](https://github.com/MSzturc/obsidian-better-pdf-plugin), but beyond rendering PDF pages.
 Slide Note provides several new features, including:
 
-- better pdf hover preview
 - graphic annotation support
 - per-file frontmatter configuration
 - performance optimization for the huge number of pages
