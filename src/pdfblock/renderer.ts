@@ -75,13 +75,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 			try {
 				const buffer = await this.cache.get(this.params.file);
 
-				if (!this.checkActiveFile(this.sourcePath))
-					return;
-
 				const document = await pdfjs.getDocument(buffer).promise;
-
-				if (!this.checkActiveFile(this.sourcePath))
-					return;
 
 				if (this.params.page.includes(0)) {
 					this.params.page = Array.from(
@@ -91,8 +85,6 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 				}
 
 				for (const pageNumber of this.params.page) {
-					if (!this.checkActiveFile(this.sourcePath))
-						return;
 
 					const page = await document.getPage(pageNumber);
 					let host = this.el.createEl("div");
@@ -106,9 +98,6 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 					const canvas = host.createEl("canvas");
 					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
-
-					if (!this.checkActiveFile(this.sourcePath))
-						return;
 
 					const context = canvas.getContext("2d");
 					const zoom = this.params.dpi;
@@ -133,9 +122,6 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						canvasContext: context,
 						viewport: pageview,
 					};
-
-					if (!this.checkActiveFile(this.sourcePath))
-						return;
 
 					canvas.addEventListener("mouseup", (event)=> {
 						app.workspace.trigger("slidenote:mouseup", event);
@@ -177,15 +163,4 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 			}
 		}
 	}
-
-	checkActiveFile(ctx_file: string) {
-		const cur_file = app.workspace.getActiveFile()?.path;
-		if (cur_file == undefined)
-			return true;
-		else if (ctx_file != cur_file)
-			return false;
-		else
-			return true;
-	}
-
 }
