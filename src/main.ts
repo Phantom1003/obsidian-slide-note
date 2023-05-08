@@ -36,7 +36,8 @@ export default class SlideNotePlugin extends Plugin {
 
 	registerPDFCanvas() {
 		this.registerEvent(this.app.workspace.on("slidenote:mouseup", (event) => {
-			this.activeCanvas(event.target.toDataURL());
+			if (event.target.parentElement.nodeName == "DIV")
+				this.activeCanvas(event.target.toDataURL());
 		}));
 
 		this.registerView(
