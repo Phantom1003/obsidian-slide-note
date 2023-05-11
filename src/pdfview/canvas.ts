@@ -81,7 +81,10 @@ export class PDFCanvasView extends ItemView {
 		});
 		option.createEl("button", {text: "Delete", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			if(drawboard.getActiveObject()){
-				drawboard.remove(drawboard.getActiveObject());
+				drawboard.getActiveObjects().forEach((element) => {
+					drawboard.remove(element);
+				});
+				drawboard.discardActiveObject();
 			}
 		});
 		option.createEl("button", {text: "Text", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
