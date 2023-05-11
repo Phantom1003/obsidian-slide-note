@@ -32,7 +32,7 @@ export class PDFCanvasView extends ItemView {
 		const image = preview.createEl("img")
 		image.alt = "Click slide to start ...";
 		image.style.position = "absolute";
-		image.style.width = "95%";
+		image.style.width = "100%";
 
 		function resize2Image() {
 			drawboard.setHeight(image.innerHeight);
@@ -75,11 +75,9 @@ export class PDFCanvasView extends ItemView {
 		option.createEl("h4").setText("Options:")
 		option.createEl("button", {text: "Select", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			drawboard.isDrawingMode = false;
-			resize2Image();
 		});
 		option.createEl("button", {text: "Pen", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			drawboard.isDrawingMode = true;
-			resize2Image();
 		});
 		option.createEl("button", {text: "Delete", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			if(drawboard.getActiveObject()){
@@ -99,7 +97,6 @@ export class PDFCanvasView extends ItemView {
 			});
 			drawboard.add(textbox);
 			drawboard.setActiveObject(textbox);
-			resize2Image();
 		});
 		option.createEl("button", {text: "Line", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			const line = new fabric.Line([50, 50, 150, 50], {
@@ -115,7 +112,6 @@ export class PDFCanvasView extends ItemView {
 			});
 			drawboard.add(line);
 			drawboard.setActiveObject(line);
-			resize2Image();
 		});
 		option.createEl("button", {text: "Rect", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			const rectangle = new fabric.Rect({
@@ -129,7 +125,6 @@ export class PDFCanvasView extends ItemView {
 			rectangle.setControlsVisibility({ mtr: false });
 			drawboard.add(rectangle);
 			drawboard.setActiveObject(rectangle);
-			resize2Image();
 		});
 		option.createEl("button", {text: "Save", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			const fractionDigit = 3;
@@ -199,12 +194,9 @@ export class PDFCanvasView extends ItemView {
 
 		this.registerEvent(app.workspace.on("slidenote:newcanvas", (src) => {
 			image.src = src;
-			resize2Image();
 		}));
 
-		this.registerEvent(app.workspace.on("resize", (event) => {
-			resize2Image();
-		}));
+		new ResizeObserver(resize2Image).observe(container)
 
 	}
 
