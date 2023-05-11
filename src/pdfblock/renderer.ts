@@ -123,8 +123,8 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						viewport: pageview,
 					};
 
-					canvas.addEventListener("mouseup", (event)=> {
-						app.workspace.trigger("slidenote:mouseup", event);
+					canvas.addEventListener("dblclick", (event)=> {
+						app.workspace.trigger("slidenote:dblclick", event);
 					});
 
 					await page.render(renderContext).promise.then(

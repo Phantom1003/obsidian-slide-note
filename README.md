@@ -38,8 +38,8 @@ Besides these basic uses, you can also append more statements in the block to an
 A string starting with @ is a graphic annotation.
 Since the PDF pages are rendered as HTML canvas elements, you can use js/ts codes to append content to the page.
 
-Slide Note provides a canvas view to help you to generate the above code.
-Click the slide page will launch the canvas on the right side.
+Slide Note provides a drawboard view to help you to generate the above code.
+Double click the slide page will launch the drawboard on the right side.
 You can add path, line, rectangle, text on the slide.
 Once you finish your annotations, click save button to generate the code that is used to render your annotations.
 
