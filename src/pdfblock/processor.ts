@@ -7,7 +7,7 @@ import { FileCache } from "./cache";
 export interface PDFBlockParameters {
 	file: string;
 	page: Array<number>;
-	link: boolean;
+	text: boolean;
 	scale: number;
 	dpi: number;
 	rotat: number;
@@ -41,7 +41,7 @@ export class PDFBlockProcessor {
 
 	async parseParameters(src: string, frontmatter: FrontMatterCache) {
 		const lines = src.split("\n");
-		const keywords = ["file", "page", "link", "scale", "rotat", "rect", "dpi"];
+		const keywords = ["file", "page", "text", "scale", "rotat", "rect", "dpi"];
 		const paramsRaw: { [k: string]: string } = {};
 		const annot: Array<string> = [];
 		const note: Array<string> = [];
@@ -63,7 +63,7 @@ export class PDFBlockProcessor {
 		const params: PDFBlockParameters = {
 			file: "",
 			page: [],
-			link: this.plugin.settings.default_link,
+			text: this.plugin.settings.default_text,
 			scale: 1,
 			dpi: this.plugin.settings.default_dpi,
 			rotat: 0,
@@ -100,13 +100,13 @@ export class PDFBlockProcessor {
 			}
 		}
 
-		// handle link
-		if (paramsRaw["link"] == undefined) {
-			if (frontmatter && "default_link" in frontmatter)
-				params.link = frontmatter["default_link"];
+		// handle text layer
+		if (paramsRaw["text"] == undefined) {
+			if (frontmatter && "default_text" in frontmatter)
+				params.text = frontmatter["default_text"];
 		}
 		else {
-			params.link = paramsRaw["link"].toLowerCase() === 'true';
+			params.text = paramsRaw["text"].toLowerCase() === 'true';
 		}
 
 		// handle scale
@@ -129,8 +129,8 @@ export class PDFBlockProcessor {
 
 		// handle rotation
 		if (paramsRaw["rotat"] == undefined) {
-			if (frontmatter && "default_scale" in frontmatter) {
-				params.rotat = frontmatter["default_scale"];
+			if (frontmatter && "default_rotat" in frontmatter) {
+				params.rotat = frontmatter["default_rotat"];
 			}
 		}
 		else {

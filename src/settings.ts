@@ -3,7 +3,7 @@ import SlideNotePlugin from './main';
 
 export class SlideNoteSettings {
 	allow_annotations: boolean = false;
-	default_link: boolean = false;
+	default_text: boolean = false;
 	default_dpi: number = 1;
 }
 
@@ -23,11 +23,11 @@ export class SlideNoteSettingsTab extends PluginSettingTab {
 		containerEl.createEl('h1', { text: 'Slide Note Settings' });
 
         new Setting(containerEl)
-            .setName("Link pages by default")
-            .setDesc("When turned on, pages will be linked to their document by default. Can be overridden using the 'link' parameter and 'default_link' frontmatter.")
-            .addToggle(toggle => toggle.setValue(this.plugin.settings.default_link)
+            .setName("Extract text by default")
+            .setDesc("When turned on, you can select the text in the page. Can be overridden using the 'text' parameter and 'default_text' frontmatter.")
+            .addToggle(toggle => toggle.setValue(this.plugin.settings.default_text)
                 .onChange((value) => {
-                    this.plugin.settings.default_link = value;
+                    this.plugin.settings.default_text = value;
                     this.plugin.saveSettings();
                 }));
 
@@ -42,7 +42,7 @@ export class SlideNoteSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Default DPI level")
-			.setDesc("Increase the value to improve the resolution of the slide.")
+			.setDesc("Increase the value to improve the resolution of the slide. Can be overridden using the 'dpi' parameter and 'default_dpi' frontmatter.")
 			.addText(text => text.setValue(this.plugin.settings.default_dpi.toString())
 				.onChange((value) => {
 					this.plugin.settings.default_dpi = parseInt(value);

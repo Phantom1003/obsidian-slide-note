@@ -36,6 +36,10 @@
 	}
 }
 
+.slide-note-canvas-layer {
+	cursor: default;
+}
+
 .slide-note-text-layer {
 	position: absolute;
 	left: 0;
@@ -48,6 +52,7 @@
 }
 
 .slide-note-text-layer > span {
+	cursor: text;
 	color: transparent;
 	position: absolute;
 	overflow: hidden;
