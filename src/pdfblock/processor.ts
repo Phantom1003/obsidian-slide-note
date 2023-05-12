@@ -86,7 +86,7 @@ export class PDFBlockProcessor {
 
 		// handle pages
 		if (paramsRaw["page"] == undefined)
-			paramsRaw["page"] = frontmatter && "default_page" in frontmatter ? frontmatter["default_page"] : ["0"];
+			paramsRaw["page"] = frontmatter && "default_page" in frontmatter ? frontmatter["default_page"] : "0";
 		const pages = paramsRaw["page"].split(",");
 		for (let i = 0; i < pages.length; i++) {
 			if (pages[i].contains("-")) {
