@@ -35,9 +35,8 @@ export default class SlideNotePlugin extends Plugin {
 	}
 
 	registerPDFCanvas() {
-		this.registerEvent(this.app.workspace.on("slidenote:dblclick", (event) => {
-			if (event.target.parentElement.nodeName == "DIV")
-				this.activeCanvas(event.target.toDataURL());
+		this.registerEvent(this.app.workspace.on("slidenote:dblclick", (canvas) => {
+			this.activeCanvas(canvas.toDataURL());
 		}));
 
 		this.registerView(

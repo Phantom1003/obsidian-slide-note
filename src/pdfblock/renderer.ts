@@ -75,19 +75,21 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 			try {
 				const buffer = await this.cache.get(this.params.file);
 
-				const document = await pdfjs.getDocument(buffer).promise;
+				const pdfdocument = await pdfjs.getDocument(buffer).promise;
 
 				if (this.params.page.includes(0)) {
 					this.params.page = Array.from(
-						{length: document.numPages},
+						{length: pdfdocument.numPages},
 						(_, i) => i + 1
 					);
 				}
 
 				for (const pageNumber of this.params.page) {
 
-					const page = await document.getPage(pageNumber);
+					const page = await pdfdocument.getPage(pageNumber);
 					let host = this.el.createEl("div");
+					host.addClass("slide-note-canvas-wrapper");
+					host.style.position = "relative";
 
 					if (this.params.link) {
 						const href = host.createEl("a");
@@ -95,8 +97,10 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						href.className = "internal-link";
 						host = href;
 					}
-
+					host.style.display = "block";
 					const canvas = host.createEl("canvas");
+					canvas.addClass("slide-note-canvas-layer")
+					canvas.style.display = "block";
 					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
 
 					const context = canvas.getContext("2d");
@@ -124,10 +128,11 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					};
 
 					canvas.addEventListener("dblclick", (event)=> {
-						app.workspace.trigger("slidenote:dblclick", event);
+						app.workspace.trigger("slidenote:dblclick", canvas);
 					});
 
-					await page.render(renderContext).promise.then(
+					await page.render(renderContext).promise
+						.then(
 						() => {
 							if (this.params.annot != "" && this.settings.allow_annotations) {
 								try {
@@ -153,7 +158,27 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 							}
 						}
-					)
+					).then(() => {
+						return page.getTextContent();
+					}).then((textContent) => {
+						function resize2Canvas() {
+							text.style.setProperty('--scale-factor', (canvas.clientWidth/effectWidth*zoom).toString());
+						}
+						const text = host.createEl("div");
+						text.addClass("slide-note-text-layer");
+						resize2Canvas();
+						text.addEventListener("dblclick", (event)=> {
+							app.workspace.trigger("slidenote:dblclick", text.previousElementSibling);
+						});
+						pdfjs.renderTextLayer({
+							textContentSource: textContent,
+							container: text,
+							viewport: pageview,
+							textDivs: []
+						});
+
+						new ResizeObserver(resize2Canvas).observe(canvas)
+					})
 
 				}
 				MarkdownPreviewView.renderMarkdown(this.params.note, this.el, this.sourcePath, this);

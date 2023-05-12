@@ -20,16 +20,16 @@ export class PDFCanvasView extends ItemView {
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
-		const content = container.createEl("div")
-		content.style.position = "relative"
-		content.createEl("h1").setText("SlideNote PDF Canvas")
+		const content = container.createEl("div");
+		content.style.position = "relative";
+		content.createEl("h1").setText("SlideNote PDF Canvas");
 
-		const preview = content.createEl("div")
-		const option = container.createEl("div")
-		const save = container.createEl("div")
+		const preview = content.createEl("div");
+		const option = container.createEl("div");
+		const save = container.createEl("div");
 
-		preview.createEl("h4").setText("Preview:")
-		const image = preview.createEl("img")
+		preview.createEl("h4").setText("Preview:");
+		const image = preview.createEl("img");
 		image.alt = "Click slide to start ...";
 		image.style.position = "absolute";
 		image.style.width = "100%";
@@ -40,7 +40,7 @@ export class PDFCanvasView extends ItemView {
 			drawboard.renderAll();
 		}
 
-		const canvas = preview.createEl("canvas")
+		const canvas = preview.createEl("canvas");
 		canvas.style.position = "absolute";
 		const drawboard = new fabric.Canvas(canvas, {
 			isDrawingMode: false,
@@ -50,8 +50,8 @@ export class PDFCanvasView extends ItemView {
 		drawboard.freeDrawingBrush.color = "rgba(250,230,50,0.5)";
 		drawboard.freeDrawingBrush.width = 10;
 		drawboard.on("selection:created", (event) => {
-			const element = drawboard.getActiveObject()
-			if (element && element.type == "path"){
+			const element = drawboard.getActiveObject();
+			if (element && element.type == "path") {
 				element.setControlsVisibility({
 					bl: false,
 					br: false,
@@ -68,11 +68,11 @@ export class PDFCanvasView extends ItemView {
 
 		save.createEl("h4").setText("Copy following annotations to your note:")
 		const output = save.createEl("textarea", {attr: {style: "width: 100%"}})
-		output.setText("Click Save button first ...")
-		output.style.minHeight = "100px"
+		output.setText("Click Save button first ...");
+		output.style.minHeight = "100px";
 
 
-		option.createEl("h4").setText("Options:")
+		option.createEl("h4").setText("Options:");
 		option.createEl("button", {text: "Select", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			drawboard.isDrawingMode = false;
 		});
