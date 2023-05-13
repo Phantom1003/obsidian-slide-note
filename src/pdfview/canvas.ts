@@ -22,12 +22,9 @@ export class PDFCanvasView extends ItemView {
 		container.empty();
 		const content = container.createEl("div");
 		content.style.position = "relative";
-		content.createEl("h1").setText("SlideNote PDF Canvas");
+		content.createEl("h1").setText("SlideNote PDF DrawBoard");
 
 		const preview = content.createEl("div");
-		const option = container.createEl("div");
-		const save = container.createEl("div");
-
 		preview.createEl("h4").setText("Preview:");
 		const image = preview.createEl("img");
 		image.alt = "Click slide to start ...";
@@ -42,10 +39,10 @@ export class PDFCanvasView extends ItemView {
 
 		const canvas = preview.createEl("canvas");
 		canvas.style.position = "absolute";
-		const drawboard = new fabric.Canvas(canvas, {
-			isDrawingMode: false,
-		});
+		const drawboard = new fabric.Canvas(canvas, {isDrawingMode: false});
 		resize2Image();
+
+		this.createToolbox(container, drawboard);
 
 		drawboard.freeDrawingBrush.color = "rgba(250,230,50,0.5)";
 		drawboard.freeDrawingBrush.width = 10;
@@ -53,26 +50,28 @@ export class PDFCanvasView extends ItemView {
 			const element = drawboard.getActiveObject();
 			if (element && element.type == "path") {
 				element.setControlsVisibility({
-					bl: false,
-					br: false,
-					mb: false,
-					ml: false,
-					mr: false,
-					mt: false,
-					tl: false,
-					tr: false,
+					bl: false, br: false,
+					mb: false, ml: false, mr: false, mt: false,
+					tl: false, tr: false,
 					mtr: false
 				});
 			}
-		})
+		});
 
-		save.createEl("h4").setText("Copy following annotations to your note:")
-		const output = save.createEl("textarea", {attr: {style: "width: 100%"}})
-		output.setText("Click Save button first ...");
-		output.style.minHeight = "100px";
+		this.registerEvent(app.workspace.on("slidenote:newcanvas", (src) => {
+			image.src = src;
+		}));
 
+		new ResizeObserver(resize2Image).observe(container);
+	}
 
-		option.createEl("h4").setText("Options:");
+	async onClose() {
+		// Nothing to clean up.
+	}
+
+	createToolbox(container: Element, drawboard: fabric.Canvas) {
+		const option = container.createEl("div");
+		option.createEl("h4").setText("Toolbox:");
 		option.createEl("button", {text: "Select", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
 			drawboard.isDrawingMode = false;
 		});
@@ -94,8 +93,7 @@ export class PDFCanvasView extends ItemView {
 				fontFamily: "Arial"
 			});
 			textbox.setControlsVisibility({
-				mt: false,
-				mb: false,
+				mt: false, mb: false,
 				mtr: false
 			});
 			drawboard.add(textbox);
@@ -107,10 +105,8 @@ export class PDFCanvasView extends ItemView {
 				strokeWidth: 10,
 			});
 			line.setControlsVisibility({
-				bl: false,
-				br: false,
-				tl: false,
-				tr: false,
+				bl: false, br: false,
+				tl: false, tr: false,
 				mtr: false
 			});
 			drawboard.add(line);
@@ -129,7 +125,9 @@ export class PDFCanvasView extends ItemView {
 			drawboard.add(rectangle);
 			drawboard.setActiveObject(rectangle);
 		});
-		option.createEl("button", {text: "Save", attr: {style: "margin-right: 4px;"}}).addEventListener("click", () => {
+		const save = container.createEl("div");
+		save.createEl("h4", {text: "Export:"})
+		save.createEl("button", {text: "Save", attr: {style: "margin-right: 4px; margin-bottom: 8px;"}}).addEventListener("click", () => {
 			const fractionDigit = 3;
 			const canvasWidth = drawboard.width;
 			const canvasHeight = drawboard.height;
@@ -193,17 +191,9 @@ export class PDFCanvasView extends ItemView {
 			output.setText(buffer.map((s) => ("@ " + s)).join("\n"));
 			output.style.height = output.scrollHeight.toString() + "px";
 		});
-
-
-		this.registerEvent(app.workspace.on("slidenote:newcanvas", (src) => {
-			image.src = src;
-		}));
-
-		new ResizeObserver(resize2Image).observe(container)
-
-	}
-
-	async onClose() {
-		// Nothing to clean up.
+		save.createEl("p").setText(" Click the save button and copy generated annotations to your note.")
+		const output = save.createEl("textarea", {attr: {style: "width: 100%"}})
+		output.setText("Click Save button first ...");
+		output.style.minHeight = "100px";
 	}
 }

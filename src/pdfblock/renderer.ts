@@ -161,7 +161,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 								const text = host.createEl("div");
 								text.addClass("slide-note-text-layer");
-								resize2Canvas();
+								text.style.setProperty('--scale-factor', zoom.toString());
 								text.addEventListener("dblclick", (event)=> {
 									app.workspace.trigger("slidenote:dblclick", text.previousElementSibling);
 								});

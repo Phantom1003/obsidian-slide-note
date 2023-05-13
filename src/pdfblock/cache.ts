@@ -11,17 +11,18 @@ export class FileCache {
 
 	async get(path: string): Promise<ArrayBuffer> {
 		if (this.map.has(path)) {
-			return this.map.get(path);
+			return this.map.get(path).slice(0);
 		}
 		else if (this.pending.has(path)) {
-			return this.pending.get(path);
+			const buffer = await this.pending.get(path)
+			return buffer.slice(0);
 		}
 		else {
 			const buffer = app.vault.adapter.readBinary(path);
 			this.pending.set(path, buffer);
 			this.map.set(path, await buffer);
 			this.pending.delete(path);
-			return buffer;
+			return this.map.get(path).slice(0);
 		}
 	}
 	invalid(path: string): void {

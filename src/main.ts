@@ -1,7 +1,6 @@
 import * as pdfjs from "pdfjs-dist";
-import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { Plugin } from 'obsidian';
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 import { PDFBlockProcessor } from "./pdfblock/processor";
 import { FileCache } from "./pdfblock/cache";
@@ -13,7 +12,10 @@ export default class SlideNotePlugin extends Plugin {
 
 	async onload() {
 		console.log("SlideNote loading ...");
-		pdfjs.GlobalWorkerOptions.workerSrc = worker;
+
+		if (pdfjs.GlobalWorkerOptions.workerSrc == "") {
+			pdfjs.GlobalWorkerOptions.workerSrc = require("pdfjs-dist/build/pdf.worker.entry.js");
+		}
 
 		await this.loadSettings();
 		this.addSettingTab(new SlideNoteSettingsTab(this.app, this));
