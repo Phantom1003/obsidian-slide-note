@@ -152,7 +152,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						}
 					);
 
-					if (this.params.text && (this.params.rect[0] == -1)) {
+					if (this.params.text && (this.params.rect[0] == -1) && (this.params.rotat == 0)) {
 						await page.getTextContent()
 							.then((textContent) => {
 								function resize2Canvas() {
