@@ -16,6 +16,11 @@ Slide Note provides several new features, including:
 - performance optimization for the huge number of pages
 - automatic rerender when the pdf file has been modified
 
+### Notice
+> Slide Note is still under development, and some of the usage may have incompatible modifications. 
+>
+> In addition, Slide Note will only be compatible with the latest non-internal version. 
+
 ## 1 Usage
 
 ### 1.1 Basic Fields

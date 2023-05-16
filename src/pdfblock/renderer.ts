@@ -1,6 +1,4 @@
-import * as pdfjs from "pdfjs-dist";
-
-import { MarkdownPreviewView, MarkdownRenderChild } from "obsidian";
+import { MarkdownPreviewView, MarkdownRenderChild, loadPdfJs } from "obsidian";
 import { PDFBlockParameters } from "./processor";
 import { SlideNoteSettings } from "../settings";
 import { FileCache } from "./cache";
@@ -74,7 +72,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 		if (this.params !== null) {
 			try {
 				const buffer = await this.cache.get(this.params.file);
-
+				const pdfjs = await loadPdfJs();
 				const pdfdocument = await pdfjs.getDocument(buffer).promise;
 
 				if (this.params.page.includes(0)) {
@@ -157,6 +155,17 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 							.then((textContent) => {
 								function resize2Canvas() {
 									text.style.setProperty('--scale-factor', (canvas.clientWidth/effectWidth*zoom).toString());
+									// TODO: remove after 1.3.0
+									text.innerHTML = "";
+									const textview = page.getViewport({
+										scale: canvas.clientWidth/effectWidth*zoom
+									});
+									pdfjs.renderTextLayer({
+										textContent: textContent,
+										container: text,
+										viewport: textview
+									});
+									// end
 								}
 
 								const text = host.createEl("div");
@@ -165,11 +174,13 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 								text.addEventListener("dblclick", (event)=> {
 									app.workspace.trigger("slidenote:dblclick", text.previousElementSibling);
 								});
-								pdfjs.renderTextLayer({
-									textContentSource: textContent,
-									container: text,
-									viewport: pageview
-								});
+
+								// TODO: restore after 1.3.0
+								// pdfjs.renderTextLayer({
+								// 	textContentSource: textContent,
+								// 	container: text,
+								// 	viewport: pageview
+								// });
 
 								new ResizeObserver(resize2Canvas).observe(canvas)
 							});

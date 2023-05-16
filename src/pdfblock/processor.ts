@@ -1,4 +1,3 @@
-import * as pdfjs from "pdfjs-dist";
 import { FrontMatterCache, MarkdownPostProcessorContext } from "obsidian";
 import SlideNotePlugin from '../main';
 import { PDFBlockRenderer } from "./renderer";

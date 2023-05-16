@@ -1,5 +1,3 @@
-import * as pdfjs from "pdfjs-dist";
-
 import { Plugin } from 'obsidian';
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 import { PDFBlockProcessor } from "./pdfblock/processor";
@@ -12,10 +10,6 @@ export default class SlideNotePlugin extends Plugin {
 
 	async onload() {
 		console.log("SlideNote loading ...");
-
-		if (pdfjs.GlobalWorkerOptions.workerSrc == "") {
-			pdfjs.GlobalWorkerOptions.workerSrc = require("pdfjs-dist/build/pdf.worker.entry.js");
-		}
 
 		await this.loadSettings();
 		this.addSettingTab(new SlideNoteSettingsTab(this.app, this));
