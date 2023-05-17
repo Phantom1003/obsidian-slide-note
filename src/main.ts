@@ -1,9 +1,10 @@
 import { Plugin } from 'obsidian';
-import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
-import { PDFBlockProcessor } from "./pdfblock/processor";
-import { FileCache } from "./pdfblock/cache";
-import { PDFCANVAS_VIEW, PDFCanvasView } from "./pdfview/canvas";
 
+import { FileCache } from "./pdfblock/cache";
+import { PDFBlockProcessor } from "./pdfblock/processor";
+import { PDFCANVAS_VIEW, PDFCanvasView } from "./pdfview/canvas";
+import { SlideNoteCMDModal } from "./pdfcmd/generateor";
+import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 
 export default class SlideNotePlugin extends Plugin {
 	settings: SlideNoteSettings;
@@ -17,6 +18,17 @@ export default class SlideNotePlugin extends Plugin {
 		this.registerPDFProcessor();
 
 		this.registerPDFCanvas();
+
+		this.addRibbonIcon('star-list', 'Slide Note Block Generator', (evt: MouseEvent) => {
+			new SlideNoteCMDModal(this.app).open();
+		});
+		this.addCommand({
+			id: 'generate-slide-note-block',
+			name: 'Generate Slide Note Code Block',
+			callback: () => {
+				new SlideNoteCMDModal(this.app).open();
+			}
+		});
 	}
 
 	registerPDFProcessor() {
