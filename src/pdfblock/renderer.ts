@@ -29,7 +29,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 		this.registerEvent(
 			app.vault.on("modify", (file) => {
 				if (file.path == this.params.file ) {
-					this.cache.invalid(file.path)
+					this.cache.invalid(file.path);
 					this.render();
 				}
 			})
@@ -92,7 +92,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					const canvas = host.createEl("canvas");
 					canvas.addClass("slide-note-canvas-layer");
 					canvas.style.width = `${Math.floor(this.params.scale * 100)}%`;
-
+					canvas.style.direction = "ltr";
 					const context = canvas.getContext("2d");
 					const zoom = this.params.dpi;
 					const offsetX = this.params.rect[0] == -1 ? 0 : - this.params.rect[0] * page.view[2] * zoom;

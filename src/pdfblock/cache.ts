@@ -26,6 +26,6 @@ export class FileCache {
 		}
 	}
 	invalid(path: string): void {
-		this.map.delete(path)
+		this.map.delete(path);
 	}
 }
