@@ -1,6 +1,6 @@
 {
 	"name": "slide-note",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"description": "Conveniently take notes on PDF course slides :P",
 	"main": "main.js",
 	"scripts": {
