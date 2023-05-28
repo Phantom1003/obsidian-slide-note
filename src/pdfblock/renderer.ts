@@ -44,7 +44,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 		const pos = hook.getBoundingClientRect().bottom;
 
-		if (pos != 0) {
+		if (pos != 0 && pos <= window.innerHeight) {
 			this.render();
 		}
 		else {
