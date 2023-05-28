@@ -155,17 +155,6 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 							.then((textContent) => {
 								function resize2Canvas() {
 									text.style.setProperty('--scale-factor', (canvas.clientWidth/effectWidth*zoom).toString());
-									// TODO: remove after 1.3.0
-									text.innerHTML = "";
-									const textview = page.getViewport({
-										scale: canvas.clientWidth/effectWidth*zoom
-									});
-									pdfjs.renderTextLayer({
-										textContent: textContent,
-										container: text,
-										viewport: textview
-									});
-									// end
 								}
 
 								const text = host.createEl("div");
@@ -174,13 +163,12 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 								text.addEventListener("dblclick", (event)=> {
 									app.workspace.trigger("slidenote:dblclick", text.previousElementSibling);
 								});
-
-								// TODO: restore after 1.3.0
-								// pdfjs.renderTextLayer({
-								// 	textContentSource: textContent,
-								// 	container: text,
-								// 	viewport: pageview
-								// });
+								
+								pdfjs.renderTextLayer({
+									textContentSource: textContent,
+									container: text,
+									viewport: pageview
+								});
 
 								new ResizeObserver(resize2Canvas).observe(canvas)
 							});
