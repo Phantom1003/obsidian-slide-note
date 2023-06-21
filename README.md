@@ -104,7 +104,7 @@ rect: W(0.069), H(0.113), W(0.861), H(0.337)
 
 Notice this field is not compatible with `text` field.
 
-### 1.3 File Front Matter
+### 1.2 File Front Matter
 
 You can overwrite above default value by write a front matter in the front of your note file.
 ```markdown
@@ -139,3 +139,26 @@ In the end, your notes should look like the following:
 
 ![advance usage](doc/advance.png)
 
+
+### 1.4 Better PDF Compatibility
+This plugin is compatible with a subset of the features [better-pdf](https://github.com/MSzturc/obsidian-better-pdf-plugin) offers.
+
+If you wish to display your old better-pdf notes, you can do so by enabling the "Support Better PDF Code Blocks" setting in the plugin settings.
+
+More information on the better-pdf syntax can be found [here](https://github.com/MSzturc/obsidian-better-pdf-plugin#syntax).
+
+It is not recommended that you continue to use the better-pdf syntax, as it is not guaranteed to be compatible with future versions of Slide Note.
+Try to migrate to the new syntax as soon as possible.
+
+While using the better-pdf syntax, some slide note features won't be available.
+
+| Better PDF Field Name | Supported by Slide Note                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| url                | ⚠️Partial, name.pdf subfolder/name.pdf and "[[filename.pdf]]" are supported, urls aren't supported |
+| link               | ❌                                                                                                 |
+| page               | ✅                                                                                                 |
+| range              | ✅                                                                                                 |
+| scale              | ✅                                                                                                 |
+| fit                | ❌                                                                                                 |
+| rotation           | ✅                                                                                                 |
+| rect               | ✅                                                                                                 |

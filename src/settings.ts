@@ -5,6 +5,7 @@ export class SlideNoteSettings {
 	allow_annotations: boolean = false;
 	default_text: boolean = false;
 	default_dpi: number = 1;
+	support_better_pdf: boolean = false;
 }
 
 export class SlideNoteSettingsTab extends PluginSettingTab {
@@ -48,6 +49,15 @@ export class SlideNoteSettingsTab extends PluginSettingTab {
 					this.plugin.settings.default_dpi = parseInt(value);
 					this.plugin.saveSettings();
 				}));
-
+		
+		new Setting(containerEl)
+			.setName("Support Better PDF Code Blocks")
+			.setDesc("Whether better-pdf code blocks are supported. If you previously used better-pdf, turn it on to use your legacy code blocks. Please note that you should start using slide-note code blocks as soon as possible.")
+			.addToggle(toggle => toggle.setValue(this.plugin.settings.support_better_pdf)
+				.onChange((value) => {
+					this.plugin.settings.support_better_pdf = value;
+					this.plugin.saveSettings();
+				}
+			));
 	}
 }

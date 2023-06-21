@@ -1,7 +1,7 @@
-import { Plugin } from 'obsidian';
+import { MarkdownPostProcessor, Plugin } from 'obsidian';
 
 import { FileCache } from "./pdfblock/cache";
-import { PDFBlockProcessor } from "./pdfblock/processor";
+import { PDFBlockProcessor, ParameterSyntaxType } from "./pdfblock/processor";
 import { PDFCANVAS_VIEW, PDFCanvasView } from "./pdfview/canvas";
 import { SlideNoteCMDModal } from "./pdfcmd/generateor";
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
@@ -16,6 +16,9 @@ export default class SlideNotePlugin extends Plugin {
 		this.addSettingTab(new SlideNoteSettingsTab(this.app, this));
 
 		this.registerPDFProcessor();
+
+		if (this.settings.support_better_pdf)
+			this.registerBetterPdfProcessor();
 
 		this.registerPDFCanvas();
 
@@ -33,9 +36,20 @@ export default class SlideNotePlugin extends Plugin {
 
 	registerPDFProcessor() {
 		const cache = new FileCache(3);
-		const processor = new PDFBlockProcessor(this, cache);
+		const processor = new PDFBlockProcessor(this, cache, ParameterSyntaxType.SlideNote);
 		const handler = this.registerMarkdownCodeBlockProcessor(
 			"slide-note",
+			async (src, el, ctx) =>
+				processor.codeProcessCallBack(src, el, ctx)
+		);
+		handler.sortOrder = -100;
+	}
+
+	registerBetterPdfProcessor() {
+		const cache = new FileCache(3);
+		const processor = new PDFBlockProcessor(this, cache, ParameterSyntaxType.BetterPDF);
+		const handler = this.registerMarkdownCodeBlockProcessor(
+			"pdf",
 			async (src, el, ctx) =>
 				processor.codeProcessCallBack(src, el, ctx)
 		);
@@ -64,6 +78,8 @@ export default class SlideNotePlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		if(this.settings.support_better_pdf)
+			this.registerBetterPdfProcessor();
 	}
 
 	async activeCanvas(src: string) {
