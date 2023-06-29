@@ -15,20 +15,29 @@ export interface PDFBlockParameters {
 	note: string;
 }
 
-export class PDFBlockProcessor {
-	plugin: SlideNotePlugin;
-	cache: FileCache
+export enum ParameterSyntaxType {
+	SlideNote = 'SlideNote',
+	BetterPDF = 'BetterPDF'
+}
 
-	constructor(plugin: SlideNotePlugin, cache: FileCache) {
-		this.plugin = plugin;
-		this.cache = cache;
+export class PDFBlockProcessor {
+
+	constructor(private plugin: SlideNotePlugin, 
+		private cache: FileCache, 
+		private parameterSyntax:ParameterSyntaxType
+	) {
 	}
 
 	async codeProcessCallBack(src: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 		const frontmatter = app.metadataCache.getCache(ctx.sourcePath)?.frontmatter as FrontMatterCache
-		let params = null;
 		try {
-			params = await this.parseParameters(src, frontmatter);
+			let params: PDFBlockParameters;
+			if (this.parameterSyntax == ParameterSyntaxType.SlideNote)
+				params = await this.parseParameters(src, frontmatter);
+			else if (this.parameterSyntax == ParameterSyntaxType.BetterPDF)
+				params = await this.parseBetterPdfParameters(src, frontmatter);
+			else
+				throw new Error("Invalid Parameter Syntax Type");
 			const render = new PDFBlockRenderer(el, params, ctx.sourcePath, this.plugin.settings, this.cache);
 			render.load();
 			ctx.addChild(render);
@@ -38,7 +47,7 @@ export class PDFBlockProcessor {
 		}
 	}
 
-	async parseParameters(src: string, frontmatter: FrontMatterCache) {
+	async parseParameters(src: string, frontmatter: FrontMatterCache): Promise<PDFBlockParameters> {
 		const lines = src.split("\n");
 		const keywords = ["file", "page", "text", "scale", "rotat", "rect", "dpi"];
 		const paramsRaw: { [k: string]: string } = {};
@@ -136,7 +145,7 @@ export class PDFBlockProcessor {
 			params.rotat = parseInt(paramsRaw["rotat"]);
 		}
 
-
+		// handle rect
 		if (paramsRaw["rect"] != undefined) {
 			const rect = paramsRaw["rect"].split(",");
 			const new_rect = [];
@@ -148,6 +157,91 @@ export class PDFBlockProcessor {
 		}
 
 		// console.log(params)
+		return params;
+	}
+
+	async parseBetterPdfParameters(src: string, frontmatter: FrontMatterCache): Promise<PDFBlockParameters> {
+		// [[filename.pdf]] isn't valid json, add quotes to fix it
+		let left_brackets = /("url":.*\]\])(?!")/g
+		let right_brackets = /("url":[^",]*)(\[\[)/g
+
+		src = src.replace(left_brackets, "$1\"")
+		src = src.replace(right_brackets, "$1\"$2")
+
+		const config = JSON.parse(src);
+		const params: PDFBlockParameters = {
+			file: "",
+			page: [],
+			text: this.plugin.settings.default_text,
+			scale: 1,
+			dpi: this.plugin.settings.default_dpi,
+			rotat: 0,
+			rect: [-1, -1, -1, -1],
+			annot: "",
+			note: ""
+		};
+
+		// handle pages
+		if(config["url"] != undefined) {
+			params.file = config["url"];
+			let url_regex  = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
+			// if it is url, error as urls are not supported
+			if (params.file.match(url_regex))
+				throw new Error(params.file + ": Urls are not supported");
+			
+			params.file = params.file.replace("[[", "").replace("]]", "");
+			params.file = app.metadataCache.getFirstLinkpathDest(params.file, "")?.path as string;
+			if (params.file == undefined)
+				throw new Error(params.file + ": No such file or directory");
+		}
+
+		// handle pages
+		if(config["page"]){
+			if (typeof config["page"] === "number")
+				params.page = [config["page"]];
+			else if (Array.isArray(config["page"]))
+			{
+				for (let i = 0; i < config["page"].length; i++) {
+					if (typeof config["page"][i] === "number")
+						params.page.push(config["page"][i]);
+					else if (Array.isArray(config["page"][i]))
+					{
+						if (config["page"][i].length != 2)
+							throw new Error(config["page"][i] + ": Invalid page range");
+						let start = config["page"][i][0];
+						let end = config["page"][i][1];
+						params.page = params.page.concat(Array.from({ length: end - start + 1 }, (_, i) => start + i));
+					}
+				}
+			}
+		}
+
+		// handle range
+		if(config["range"]){
+			if (config["range"].length != 2)
+				throw new Error(config["range"] + ": Invalid page range");
+			let start = config["range"][0];
+			let end = config["range"][1];
+			params.page = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+		}
+
+		// handle scale
+		if(config["scale"] != undefined)
+			params.scale = config["scale"];
+		else if (frontmatter && "default_scale" in frontmatter)
+				params.scale = frontmatter["default_scale"];
+		
+		
+		// handle rotation
+		if(config["rotation"] != undefined)
+			params.rotat = config["rotation"];
+		else if (frontmatter && "default_rotat" in frontmatter)
+				params.rotat = frontmatter["default_rotat"];
+		
+		// handle rect
+		if(config["rect"] != undefined && config["rect"].length == 4)
+			params.rect = [...config["rect"]];
+
 		return params;
 	}
 }
