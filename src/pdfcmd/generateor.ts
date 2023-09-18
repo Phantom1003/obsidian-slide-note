@@ -40,8 +40,8 @@ export class SlideNoteCMDModal extends Modal {
 						throw new Notice(r + ": Invalid page range");
 					pages = pages.concat(Array.from({ length: parseInt(range[1]) - parseInt(range[0]) + 1 }, (_, i) => parseInt(range[0]) + i));
 				}
-			else {
-					pages.push(parseInt(pages[i]));
+				else {
+					pages.push(parseInt(r));
 				}
 			});
 			pages.reverse().forEach((p, i) => {
@@ -51,8 +51,10 @@ export class SlideNoteCMDModal extends Modal {
 						"```slide-note",
 						`page: ${p}`,
 						"```",
-						"\n",
-						"---\n",
+						`^page${p}`,
+						"",
+						"",
+						"---",
 						"\n"
 					];
 					const cursor = view.editor.getCursor();

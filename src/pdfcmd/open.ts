@@ -14,7 +14,7 @@ export function openPDFwithLocal(view: MarkdownView) {
 			view.editor.getSelection() : "";
 
 		const lines = selected.split("\n");
-		let fileName = frontmatter["default_file"]
+		let fileName = frontmatter["default_file"];
 		for (let i = 0; i < lines.length; i++) {
 			const words = lines[i].trim().split(/:(.*)/s);
 			if (words[0] == "file") {
