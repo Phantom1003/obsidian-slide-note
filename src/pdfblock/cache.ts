@@ -1,4 +1,6 @@
-import { LRUCache } from "lru-cache"
+import { LRUCache } from "lru-cache";
+import { isAbsolute } from "path";
+import { readFileSync } from "fs";
 
 export class FileCache {
 	map: LRUCache<string, ArrayBuffer>
@@ -18,7 +20,7 @@ export class FileCache {
 			return buffer.slice(0);
 		}
 		else {
-			const buffer = app.vault.adapter.readBinary(path);
+			const buffer = isAbsolute(path) ? this.readLocalFile(path) : app.vault.adapter.readBinary(path);
 			this.pending.set(path, buffer);
 			this.map.set(path, await buffer);
 			this.pending.delete(path);
@@ -27,5 +29,15 @@ export class FileCache {
 	}
 	invalid(path: string): void {
 		this.map.delete(path);
+	}
+
+	async readLocalFile(path: string): Promise<ArrayBuffer> {
+		const buffer = readFileSync(path);
+		var arrayBuffer = new ArrayBuffer(buffer.length);
+		var typedArray = new Uint8Array(arrayBuffer);
+		for (var i = 0; i < buffer.length; ++i) {
+			typedArray[i] = buffer[i];
+		}
+		return arrayBuffer;
 	}
 }

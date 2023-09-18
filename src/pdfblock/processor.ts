@@ -55,7 +55,7 @@ export class PDFBlockProcessor {
 		const note: Array<string> = [];
 
 		for (let i = 0; i < lines.length; i++) {
-			const words = lines[i].trim().split(":")
+			const words = lines[i].trim().split(/:(.*)/s)
 			if (keywords.indexOf(words[0]) > -1) {
 				if (words[1].length != 0)
 					paramsRaw[words[0]] = words[1].trim();
@@ -88,7 +88,7 @@ export class PDFBlockProcessor {
 		const file_raw = paramsRaw["file"].contains("[[") ?
 			paramsRaw["file"].replace("[[", "").replace("]]", "") :
 			paramsRaw["file"];
-		params.file = app.metadataCache.getFirstLinkpathDest(file_raw, "")?.path as string;
+		params.file = app.metadataCache.getFirstLinkpathDest(file_raw, "")?.path ?? file_raw;
 		if (params.file == undefined)
 			throw new Error(paramsRaw["file"] + ": No such file or directory");
 
