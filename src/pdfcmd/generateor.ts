@@ -52,7 +52,7 @@ export class SlideNoteCMDModal extends Modal {
 						`page: ${p}`,
 						"```",
 						"\n",
-						"---\n"
+						"---\n",
 						"\n"
 					];
 					const cursor = view.editor.getCursor();
