@@ -47,7 +47,7 @@ export class SlideNoteCMDModal extends Modal {
 			pages.reverse().forEach((p, i) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
-					let template = [
+					const template = [
 						"```slide-note",
 						`page: ${p}`,
 						"```",

@@ -1,10 +1,11 @@
-import { MarkdownPostProcessor, Plugin } from 'obsidian';
+import { Editor, MarkdownView, Menu, Platform, Plugin } from 'obsidian';
 
 import { FileCache } from "./pdfblock/cache";
 import { PDFBlockProcessor, ParameterSyntaxType } from "./pdfblock/processor";
 import { PDFCANVAS_VIEW, PDFCanvasView } from "./pdfview/canvas";
 import { SlideNoteCMDModal } from "./pdfcmd/generateor";
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
+import { openPDFwithLocal } from "./pdfcmd/open";
 
 export default class SlideNotePlugin extends Plugin {
 	settings: SlideNoteSettings;
@@ -32,6 +33,19 @@ export default class SlideNotePlugin extends Plugin {
 				new SlideNoteCMDModal(this.app).open();
 			}
 		});
+
+		this.registerEvent(this.app.workspace.on('editor-menu',
+			(menu: Menu, _: Editor, view: MarkdownView) => {
+				if (Platform.isDesktop) {
+					menu.addItem((item) => {
+						item.setTitle("Slide Note: open with local application")
+							.setIcon("book-open")
+							.onClick((_) => {
+								openPDFwithLocal(view);
+							});
+					});
+				}
+			}));
 	}
 
 	registerPDFProcessor() {
