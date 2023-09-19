@@ -165,7 +165,7 @@ While using the `better-pdf` syntax, some slide note features won't be available
 | rotation           | ✅                                                                                                 |
 | rect               | ✅                                                                                                 |
 
-### 1.5 Slide Note block generation
+### 1.5 Slide Note Block Generator
 
 You will find an item called `Slide Note Block Generation` on your left sidebar.
 You can use this generator to insert a bunch of blocks into your current active file.
