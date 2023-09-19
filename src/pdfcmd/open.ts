@@ -1,7 +1,6 @@
 import { MarkdownView, normalizePath, Notice, Platform} from "obsidian";
 import { exec } from "child_process";
 import { isAbsolute } from "path";
-import { URL } from "url";
 
 export function openPDFwithLocal(view: MarkdownView) {
 	try {
@@ -25,7 +24,7 @@ export function openPDFwithLocal(view: MarkdownView) {
 		}
 
 		if (fileName) {
-			const cmd = Platform.isWin ? "start" : "open";
+			const openCommand = Platform.isWin ? 'start ""' : Platform.isLinux ? "xdg-open" : "open";
 			const fullPath = isAbsolute(fileName) ? fileName :
 				normalizePath(
 					app.vault.adapter.getBasePath() + "/" +
@@ -33,12 +32,16 @@ export function openPDFwithLocal(view: MarkdownView) {
 						fileName.replace("[[", "").replace("]]", ""), 
 						"")?.path
 				);
-			exec(`${cmd} ${fullPath}`, (error, stdout, stderr) => {
+			const cmd = `${openCommand} "${fullPath}"`
+
+			console.log(cmd)
+			exec(cmd, (error, stdout, stderr) => {
 				if (error) {
 					throw new Error(`${error}, ${stdout}, ${stderr}`);
 				}
+				new Notice(`[SlideNote] Open ${fullPath}`);
 			})
-			new Notice(`[SlideNote] Open ${fullPath}`);
+
 		}
 		else {
 			throw new Error("Unable to find a file name to open.");
