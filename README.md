@@ -1,5 +1,7 @@
 # Obsidian Slide Note
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/Phantom1003)
+
 This repository maintains an Obsidian plugin that can help you take notes for your classes more easily.
 
 With this plugin you can write plaintext notes, and:
