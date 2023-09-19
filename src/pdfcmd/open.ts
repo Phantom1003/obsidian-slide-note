@@ -10,7 +10,7 @@ export function openPDFwithLocal(view: MarkdownView) {
 		const frontmatter = app.metadataCache.getCache(filePath)?.frontmatter ?? {};
 
 		const selected: string = view.editor.somethingSelected() ? 
-			view.editor.getSelection() : "";
+			view.editor.getSelection() : view.editor.getLine(view.editor.getCursor("anchor").line);
 
 		const lines = selected.split("\n");
 		let fileName = frontmatter["default_file"];
@@ -33,8 +33,6 @@ export function openPDFwithLocal(view: MarkdownView) {
 						"")?.path
 				);
 			const cmd = `${openCommand} "${fullPath}"`
-
-			console.log(cmd)
 			exec(cmd, (error, stdout, stderr) => {
 				if (error) {
 					throw new Error(`${error}, ${stdout}, ${stderr}`);
