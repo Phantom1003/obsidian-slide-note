@@ -1,27 +1,13 @@
 import { MarkdownView, normalizePath, Notice, Platform} from "obsidian";
 import { exec } from "child_process";
 import { isAbsolute } from "path";
+import { getFileName } from "./utils";
 
 export function openPDFwithLocal(view: MarkdownView) {
 	try {
-		const filePath = this.app.workspace.getActiveFile()?.path;
-		if (!filePath)
-			throw new Error("No open file!");
-		const frontmatter = app.metadataCache.getCache(filePath)?.frontmatter ?? {};
-
-		const selected: string = view.editor.somethingSelected() ? 
+		const selected: string = view.editor.somethingSelected() ?
 			view.editor.getSelection() : view.editor.getLine(view.editor.getCursor("anchor").line);
-
-		const lines = selected.split("\n");
-		let fileName = frontmatter["default_file"];
-		for (let i = 0; i < lines.length; i++) {
-			const words = lines[i].trim().split(/:(.*)/s);
-			if (words[0] == "file") {
-				if (words[1].length != 0)
-					fileName = words[1].trim();
-				break;
-			}
-		}
+		const fileName = getFileName(selected);
 
 		if (fileName) {
 			const openCommand = Platform.isWin ? 'start ""' : Platform.isLinux ? "xdg-open" : "open";

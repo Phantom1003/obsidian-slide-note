@@ -1,4 +1,5 @@
 import { App, Modal, Notice, MarkdownView } from 'obsidian';
+import { getFileName } from "./utils";
 
 export class SlideNoteCMDModal extends Modal {
 	constructor(app: App) {
@@ -9,10 +10,22 @@ export class SlideNoteCMDModal extends Modal {
 		const container = this.contentEl.createEl("div");
 		container.createEl('h2', {text: "SlideNote Block Generator"});
 		container.createEl('p', {text: `Current Active File: ${this.app.workspace.getActiveFile()?.path}`});
-		let target = this.app.metadataCache.getFileCache(this.app.workspace.getActiveFile())?.frontmatter?.default_file;
+
+		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (view == null) {
+			container.createEl('p', {
+				text: "Please open a file first",
+				attr: {style: "color: red;"}
+			});
+			return;
+		}
+
+		const selected: string = view.editor.somethingSelected() ?
+			view.editor.getSelection() : view.editor.getLine(view.editor.getCursor("anchor").line);
+		let target = getFileName(selected);
 		if (target == undefined) {
 			container.createEl('p', {
-				text: "Please specify a `default_file` in the frontmatter",
+				text: "Please select a Slide Note block, or specify a `default_file` in the frontmatter",
 				attr: {style: "color: red;"}
 			});
 			return;
@@ -45,7 +58,6 @@ export class SlideNoteCMDModal extends Modal {
 				}
 			});
 			pages.reverse().forEach((p, i) => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
 					const template = [
 						"```slide-note",
