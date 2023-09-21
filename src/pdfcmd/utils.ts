@@ -1,12 +1,13 @@
-import { FrontMatterCache } from "obsidian";
+import { FrontMatterCache, normalizePath } from "obsidian";
+import { isAbsolute } from "path";
 
-export function getFileName(selected: string): string | undefined {
+export function getFileName(selected: string, absolute = false): string | undefined {
 	const filePath = this.app.workspace.getActiveFile()?.path;
 	if (!filePath)
 		return undefined;
 	const frontmatter = app.metadataCache.getCache(filePath)?.frontmatter ?? {} as FrontMatterCache;
 	const lines = selected.split("\n");
-	let fileName = frontmatter["default_file"] as string;
+	let fileName = frontmatter["default_file"];
 	for (let i = 0; i < lines.length; i++) {
 		const words = lines[i].trim().split(/:(.*)/s);
 		if (words[0] == "file") {
@@ -15,5 +16,23 @@ export function getFileName(selected: string): string | undefined {
 			break;
 		}
 	}
+
+	if (fileName) {
+		if (absolute) {
+			fileName = isAbsolute(fileName) ? fileName :
+				normalizePath(
+					app.vault.adapter.getBasePath() + "/" +
+					app.metadataCache.getFirstLinkpathDest(
+						fileName.replace("[[", "").replace("]]", ""),
+						"")?.path
+				);
+		}
+		else {
+			fileName = app.metadataCache.getFirstLinkpathDest(
+				fileName.replace("[[", "").replace("]]", ""),
+				"")?.path
+		}
+	}
+
 	return fileName;
 }

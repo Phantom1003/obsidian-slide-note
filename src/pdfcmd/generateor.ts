@@ -1,4 +1,4 @@
-import { App, Modal, Notice, MarkdownView } from 'obsidian';
+import { App, Modal, Notice, MarkdownView, normalizePath } from 'obsidian';
 import { getFileName } from "./utils";
 
 export class SlideNoteCMDModal extends Modal {
@@ -20,10 +20,8 @@ export class SlideNoteCMDModal extends Modal {
 			return;
 		}
 
-		const selected: string = view.editor.somethingSelected() ?
-			view.editor.getSelection() : view.editor.getLine(view.editor.getCursor("anchor").line);
-		let target = getFileName(selected);
-		if (target == undefined) {
+		const fileName = getFileName(view.editor.getSelection());
+		if (fileName == undefined) {
 			container.createEl('p', {
 				text: "Please select a Slide Note block, or specify a `default_file` in the frontmatter",
 				attr: {style: "color: red;"}
@@ -31,11 +29,9 @@ export class SlideNoteCMDModal extends Modal {
 			return;
 		}
 		container.style.maxHeight = '1000px';
-		target = this.app.metadataCache.getFirstLinkpathDest(target, "")?.path as string;
-		container.createEl('p', {text: `Target File: ${target}`});
-		target = this.app.vault.adapter.getResourcePath(target);
+		container.createEl('p', {text: `Target File: ${fileName}`});
 		const iframe = container.createEl('iframe');
-		iframe.src = target;
+		iframe.src = this.app.vault.adapter.getResourcePath(normalizePath(fileName));
 		iframe.style.width = '100%';
 		iframe.style.height = '500px';
 
@@ -45,7 +41,8 @@ export class SlideNoteCMDModal extends Modal {
 		input.placeholder = "enter page range"
 		generate.createEl('button', {text: "Generate"}).onclick = (e) => {
 			let pages = []
-			const ranges = input.value.split(",");
+			const ranges = input.value.trim().split(",");
+			console.log(ranges, input.value)
 			ranges.forEach((r, i) => {
 				if (r.contains("-")) {
 					const range = r.split("-");
@@ -53,14 +50,16 @@ export class SlideNoteCMDModal extends Modal {
 						throw new Notice(r + ": Invalid page range");
 					pages = pages.concat(Array.from({ length: parseInt(range[1]) - parseInt(range[0]) + 1 }, (_, i) => parseInt(range[0]) + i));
 				}
-				else {
+				else if (!isNaN(parseInt(r))) {
 					pages.push(parseInt(r));
 				}
 			});
-			pages.reverse().forEach((p, i) => {
+			pages.forEach((p, i) => {
 				if (view) {
 					const template = [
+						"",
 						"```slide-note",
+						`file: ${fileName}`,
 						`page: ${p}`,
 						"```",
 						`^page${p}`,
@@ -69,10 +68,10 @@ export class SlideNoteCMDModal extends Modal {
 						"---",
 						"\n"
 					];
-					const cursor = view.editor.getCursor();
-					view.editor.replaceRange(template.join('\n'), cursor);
+					view.editor.replaceSelection(template.join('\n'));
 				}
 			});
+			this.close();
 		};
 	}
 
