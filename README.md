@@ -169,13 +169,23 @@ While using the `better-pdf` syntax, some slide note features won't be available
 
 You will find an item called `Slide Note Block Generation` on your left sidebar.
 You can use this generator to insert a bunch of blocks into your current active file.
+To generate blocks, you first need to specify a file to open.
 You can specify the PDF file to open by:
 
 1. selecting a Slide Note code block.
-2. moving the cursor to the line containing the file field in the SlideNote block.
-3. setting a `default_file` property in the front matter.
+2. setting a `default_file` property in the front matter.
+
+And then click the icon in the left sidebar, input the pages you want to insert.
+Notice when you select a block to specify the file to open, the generated blocks will replace your selection.
 
 ### 1.6 Slide Note Quick Open
 
 You may still want to use your PDF viewer to edit your slides.
-You can use the same methods as in section 1.5 to specify the PDF file to open, then right-click and select `Slide Note: open with local application`.
+You also need to specify a PDF file to open.
+You can use one of the following methods:
+
+1. select a Slide Note code block.
+2. move the cursor to the line containing the `file` field in the SlideNote block.
+3. set a `default_file` property in the front matter.
+
+After confirming the file to open, you can right-click the selection/line/editor and select `Slide Note: open with local application`.
