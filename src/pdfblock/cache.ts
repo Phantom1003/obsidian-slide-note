@@ -1,3 +1,4 @@
+import { Platform } from "obsidian";
 import { LRUCache } from "lru-cache";
 import { isAbsolute } from "path";
 import { readFileSync } from "fs";
@@ -20,7 +21,7 @@ export class FileCache {
 			return buffer.slice(0);
 		}
 		else {
-			const buffer = isAbsolute(path) ? this.readLocalFile(path) : app.vault.adapter.readBinary(path);
+			const buffer = Platform.isDesktop && isAbsolute(path) ? this.readLocalFile(path) : app.vault.adapter.readBinary(path);
 			this.pending.set(path, buffer);
 			this.map.set(path, await buffer);
 			this.pending.delete(path);

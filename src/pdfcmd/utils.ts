@@ -1,4 +1,4 @@
-import { FrontMatterCache, normalizePath } from "obsidian";
+import { FrontMatterCache, normalizePath, Platform } from "obsidian";
 import { isAbsolute } from "path";
 
 export function getFileName(selected: string, absolute = false): string | undefined {
@@ -19,7 +19,7 @@ export function getFileName(selected: string, absolute = false): string | undefi
 
 	if (fileName) {
 		if (absolute) {
-			fileName = isAbsolute(fileName) ? fileName :
+			fileName = Platform.isDesktop && isAbsolute(fileName) ? fileName :
 				normalizePath(
 					app.vault.adapter.getBasePath() + "/" +
 					app.metadataCache.getFirstLinkpathDest(

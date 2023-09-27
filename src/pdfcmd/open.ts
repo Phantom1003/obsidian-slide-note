@@ -1,6 +1,5 @@
-import { MarkdownView, normalizePath, Notice, Platform} from "obsidian";
+import { MarkdownView, Notice, Platform} from "obsidian";
 import { exec } from "child_process";
-import { isAbsolute } from "path";
 import { getFileName } from "./utils";
 
 export function openPDFwithLocal(view: MarkdownView) {

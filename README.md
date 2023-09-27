@@ -56,7 +56,9 @@ file: example.pdf
 file: [[example.pdf]]
 ```
 
-This field also supports the absolute path. But we don't suggest you use the relative path, please use the obsidian built-in link name, using the relative path may produce unexpected behaviors. 
+This field also supports the absolute path in desktop mode.
+However, if you also want to view your notes on your phone, you should not use the absolute path.
+Besides, we also don't suggest you use the relative path, please use the obsidian built-in link name, using the relative path may produce unexpected behaviors. 
 
 #### 1.1.2 `page` Field
 
