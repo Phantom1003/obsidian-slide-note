@@ -150,26 +150,28 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						}
 					);
 
-					if (this.params.text && (this.params.rect[0] == -1) && (this.params.rotat == 0)) {
+					const has_text = this.params.text && (this.params.rect[0] == -1) && (this.params.rotat == 0);
+					const event_hover = has_text ? host.createEl("div") : canvas;
+					event_hover.addEventListener("dblclick", (event) => {
+						app.workspace.trigger("slidenote:dblclick", []);
+					});
+					event_hover.addEventListener("mouseup", (event: MouseEvent) => {
+						if (event.button == 0) {			// left
+						} else if (event.button == 1) {		// wheel
+						} else if (event.button == 2){		// right
+							app.workspace.trigger("slidenote:rclick", event, this.el);
+						}});
+
+					if (has_text) {
 						await page.getTextContent()
 							.then((textContent: any) => {
 								function resize2Canvas() {
 									text.style.setProperty('--scale-factor', (canvas.clientWidth/effectWidth*zoom).toString());
 								}
 
-								const text = host.createEl("div");
+								const text = event_hover;
 								text.addClass("slide-note-text-layer");
 								text.style.setProperty('--scale-factor', zoom.toString());
-								text.addEventListener("dblclick", (event) => {
-									app.workspace.trigger("slidenote:dblclick", text.previousElementSibling);
-								});
-								text.addEventListener("mouseup", (event: MouseEvent) => {
-									if (event.button == 0) {			// left
-									} else if (event.button == 1) {		// wheel
-									} else if (event.button == 2){		// right
-										app.workspace.trigger("slidenote:rclick", event);
-									}});
-								
 								pdfjs.renderTextLayer({
 									textContentSource: textContent,
 									container: text,

@@ -1,4 +1,4 @@
-import {Editor, getFrontMatterInfo, MarkdownView, Menu, Platform, Plugin} from 'obsidian';
+import {Editor, MarkdownView, Menu, Platform, Plugin} from 'obsidian';
 
 import { FileCache } from "./pdfblock/cache";
 import { PDFBlockProcessor, ParameterSyntaxType } from "./pdfblock/processor";
@@ -73,11 +73,19 @@ export default class SlideNotePlugin extends Plugin {
 
 	registerPDFMenu() {
 		// @ts-ignore
-		this.registerEvent(this.app.workspace.on("slidenote:rclick", (event) => {
+		this.registerEvent(this.app.workspace.on("slidenote:rclick", (event, block: HTMLElement) => {
 			const menu = new Menu();
+			menu.addItem((item) => {
+				item.setTitle("Edit")
+					.setIcon("pencil")
+					.onClick((_) => {
+						// @ts-ignore
+						block.nextSibling?.click();
+					})
+			})
 			if (Platform.isDesktop) {
 				menu.addItem((item) => {
-					item.setTitle("Slide Note: open with local application")
+					item.setTitle("Open PDF with local APP")
 						.setIcon("book-open")
 						.onClick((_) => {
 							// @ts-ignore
@@ -92,7 +100,7 @@ export default class SlideNotePlugin extends Plugin {
 			(menu: Menu, _: Editor, view: MarkdownView) => {
 				if (Platform.isDesktop && getFileName(view) != undefined) {
 					menu.addItem((item) => {
-						item.setTitle("Slide Note: open with local application")
+						item.setTitle("Slide Note: Open PDF with local APP")
 							.setIcon("book-open")
 							.onClick((_) => {
 								openPDFwithLocal(view);
