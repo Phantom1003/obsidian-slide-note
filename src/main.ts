@@ -3,7 +3,7 @@ import { Editor, MarkdownView, Menu, Platform, Plugin } from 'obsidian';
 import { FileCache } from "./pdfblock/cache";
 import { PDFBlockProcessor, ParameterSyntaxType } from "./pdfblock/processor";
 import { PDFCANVAS_VIEW, PDFCanvasView } from "./pdfview/canvas";
-import { SlideNoteCMDModal } from "./pdfcmd/generateor";
+import { SlideNoteCMDModal } from "./pdfcmd/generator";
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 import { openPDFwithLocal } from "./pdfcmd/open";
 
@@ -31,6 +31,7 @@ export default class SlideNotePlugin extends Plugin {
 			name: 'Generate Slide Note Code Block',
 			callback: () => {
 				new SlideNoteCMDModal(this.app).open();
+				// this.app.commands.executeCommandById
 			}
 		});
 
@@ -71,6 +72,7 @@ export default class SlideNotePlugin extends Plugin {
 	}
 
 	registerPDFCanvas() {
+		// @ts-ignore
 		this.registerEvent(this.app.workspace.on("slidenote:dblclick", (canvas) => {
 			this.activeCanvas(canvas.toDataURL());
 		}));
@@ -99,7 +101,7 @@ export default class SlideNotePlugin extends Plugin {
 	async activeCanvas(src: string) {
 		this.app.workspace.detachLeavesOfType(PDFCANVAS_VIEW);
 
-		await this.app.workspace.getRightLeaf(false).setViewState({
+		await this.app.workspace.getRightLeaf(false)?.setViewState({
 			type: PDFCANVAS_VIEW,
 			active: true,
 		});

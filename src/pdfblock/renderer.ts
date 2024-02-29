@@ -56,14 +56,14 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 				(this.params.page[0] % 15 + 1) * 5000
 			)
 
-			function renderCallBcak() {
+			const renderCallBack = function () {
 				if (hook.getBoundingClientRect().bottom != 0) {
 					clearInterval(delay);
 					this.render();
 				}
 			}
-			document.addEventListener("wheel", renderCallBcak.bind(this));
-			document.addEventListener("touchmove",  renderCallBcak.bind(this));
+			document.addEventListener("wheel", renderCallBack.bind(this));
+			document.addEventListener("touchmove",  renderCallBack.bind(this));
 		}
 	}
 
@@ -152,7 +152,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 					if (this.params.text && (this.params.rect[0] == -1) && (this.params.rotat == 0)) {
 						await page.getTextContent()
-							.then((textContent) => {
+							.then((textContent: any) => {
 								function resize2Canvas() {
 									text.style.setProperty('--scale-factor', (canvas.clientWidth/effectWidth*zoom).toString());
 								}

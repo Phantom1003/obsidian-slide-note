@@ -40,7 +40,7 @@ export class SlideNoteCMDModal extends Modal {
 		const input = generate.createEl("input", {attr: {style: "margin-right: 8px;"}})
 		input.placeholder = "enter page range"
 		generate.createEl('button', {text: "Generate"}).onclick = (e) => {
-			let pages = []
+			let pages: any[] = []
 			const ranges = input.value.trim().split(",");
 			console.log(ranges, input.value)
 			ranges.forEach((r, i) => {
