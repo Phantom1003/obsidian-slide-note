@@ -61,7 +61,7 @@ export default class SlideNotePlugin extends Plugin {
 
 	registerPDFCanvas() {
 		// @ts-ignore
-		this.registerEvent(this.app.workspace.on("slidenote:dblclick", (canvas) => {
+		this.registerEvent(this.app.workspace.on("slidenote:dblclick", (event, canvas) => {
 			this.activeCanvas(canvas.toDataURL());
 		}));
 

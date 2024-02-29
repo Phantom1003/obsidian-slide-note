@@ -117,10 +117,6 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 						viewport: pageview,
 					};
 
-					canvas.addEventListener("dblclick", (event)=> {
-						app.workspace.trigger("slidenote:dblclick", canvas);
-					});
-
 					await page.render(renderContext).promise
 						.then(
 						() => {
@@ -153,7 +149,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 					const has_text = this.params.text && (this.params.rect[0] == -1) && (this.params.rotat == 0);
 					const event_hover = has_text ? host.createEl("div") : canvas;
 					event_hover.addEventListener("dblclick", (event) => {
-						app.workspace.trigger("slidenote:dblclick", []);
+						app.workspace.trigger("slidenote:dblclick", event, canvas);
 					});
 					event_hover.addEventListener("mouseup", (event: MouseEvent) => {
 						if (event.button == 0) {			// left
