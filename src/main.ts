@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Menu, Platform, Plugin } from 'obsidian';
+import {Editor, getFrontMatterInfo, MarkdownView, Menu, Platform, Plugin} from 'obsidian';
 
 import { FileCache } from "./pdfblock/cache";
 import { PDFBlockProcessor, ParameterSyntaxType } from "./pdfblock/processor";
@@ -6,6 +6,7 @@ import { PDFCANVAS_VIEW, PDFCanvasView } from "./pdfview/canvas";
 import { SlideNoteCMDModal } from "./pdfcmd/generator";
 import { SlideNoteSettings, SlideNoteSettingsTab } from './settings';
 import { openPDFwithLocal } from "./pdfcmd/open";
+import {getFileName} from "./pdfcmd/utils";
 
 export default class SlideNotePlugin extends Plugin {
 	settings: SlideNoteSettings;
@@ -17,11 +18,11 @@ export default class SlideNotePlugin extends Plugin {
 		this.addSettingTab(new SlideNoteSettingsTab(this.app, this));
 
 		this.registerPDFProcessor();
+		this.registerPDFCanvas();
+		this.registerPDFMenu();
 
 		if (this.settings.support_better_pdf)
 			this.registerBetterPdfProcessor();
-
-		this.registerPDFCanvas();
 
 		this.addRibbonIcon('star-list', 'Slide Note Block Generator', (evt: MouseEvent) => {
 			new SlideNoteCMDModal(this.app).open();
@@ -34,19 +35,6 @@ export default class SlideNotePlugin extends Plugin {
 				// this.app.commands.executeCommandById
 			}
 		});
-
-		this.registerEvent(this.app.workspace.on('editor-menu',
-			(menu: Menu, _: Editor, view: MarkdownView) => {
-				if (Platform.isDesktop) {
-					menu.addItem((item) => {
-						item.setTitle("Slide Note: open with local application")
-							.setIcon("book-open")
-							.onClick((_) => {
-								openPDFwithLocal(view);
-							});
-					});
-				}
-			}));
 	}
 
 	registerPDFProcessor() {
@@ -81,6 +69,37 @@ export default class SlideNotePlugin extends Plugin {
 			PDFCANVAS_VIEW,
 			(leaf) => new PDFCanvasView(leaf)
 		);
+	}
+
+	registerPDFMenu() {
+		// @ts-ignore
+		this.registerEvent(this.app.workspace.on("slidenote:rclick", (event) => {
+			const menu = new Menu();
+			if (Platform.isDesktop) {
+				menu.addItem((item) => {
+					item.setTitle("Slide Note: open with local application")
+						.setIcon("book-open")
+						.onClick((_) => {
+							// @ts-ignore
+							openPDFwithLocal(this.app.workspace.getActiveViewOfType(MarkdownView));
+						});
+				});
+			}
+			menu.showAtMouseEvent(event);
+		}));
+
+		this.registerEvent(this.app.workspace.on('editor-menu',
+			(menu: Menu, _: Editor, view: MarkdownView) => {
+				if (Platform.isDesktop && getFileName(view) != undefined) {
+					menu.addItem((item) => {
+						item.setTitle("Slide Note: open with local application")
+							.setIcon("book-open")
+							.onClick((_) => {
+								openPDFwithLocal(view);
+							});
+					});
+				}
+			}));
 	}
 
 	onunload() {

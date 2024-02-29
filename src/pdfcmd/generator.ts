@@ -20,7 +20,7 @@ export class SlideNoteCMDModal extends Modal {
 			return;
 		}
 
-		const fileName = getFileName(view.editor.getSelection());
+		const fileName = getFileName(view);
 		if (fileName == undefined) {
 			container.createEl('p', {
 				text: "Please select a Slide Note block, or specify a `default_file` in the frontmatter",

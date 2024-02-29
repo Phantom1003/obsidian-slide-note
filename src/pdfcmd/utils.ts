@@ -1,7 +1,9 @@
-import { FrontMatterCache, normalizePath, Platform } from "obsidian";
+import {FrontMatterCache, MarkdownView, normalizePath, Platform} from "obsidian";
 import { isAbsolute } from "path";
 
-export function getFileName(selected: string, absolute = false): string | undefined {
+export function getFileName(view: MarkdownView, absolute = false): string | undefined {
+	const selected: string = view.editor.somethingSelected() ?
+		view.editor.getSelection() : view.editor.getLine(view.editor.getCursor("anchor").line);
 	const filePath = this.app.workspace.getActiveFile()?.path;
 	if (!filePath)
 		return undefined;
@@ -21,6 +23,7 @@ export function getFileName(selected: string, absolute = false): string | undefi
 		if (absolute) {
 			fileName = Platform.isDesktop && isAbsolute(fileName) ? fileName :
 				normalizePath(
+					// @ts-ignore
 					app.vault.adapter.getBasePath() + "/" +
 					app.metadataCache.getFirstLinkpathDest(
 						fileName.replace("[[", "").replace("]]", ""),

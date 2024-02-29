@@ -4,9 +4,7 @@ import { getFileName } from "./utils";
 
 export function openPDFwithLocal(view: MarkdownView) {
 	try {
-		const selected: string = view.editor.somethingSelected() ?
-			view.editor.getSelection() : view.editor.getLine(view.editor.getCursor("anchor").line);
-		const fileName = getFileName(selected, true);
+		const fileName = getFileName(view, true);
 
 		if (fileName) {
 			const openCommand = Platform.isWin ? 'start ""' : Platform.isLinux ? "xdg-open" : "open";
