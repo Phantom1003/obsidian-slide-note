@@ -8,16 +8,18 @@ export class FileCache {
 	pending: Map<string, Promise<ArrayBuffer>>
 
 	constructor(max: number) {
-		this.map = new LRUCache<string, string>({ max: max });
+		this.map = new LRUCache<string, ArrayBuffer>({ max: max });
 		this.pending = new Map();
 	}
 
 	async get(path: string): Promise<ArrayBuffer> {
 		if (this.map.has(path)) {
+			// @ts-ignore
 			return this.map.get(path).slice(0);
 		}
 		else if (this.pending.has(path)) {
 			const buffer = await this.pending.get(path)
+			// @ts-ignore
 			return buffer.slice(0);
 		}
 		else {
@@ -25,6 +27,7 @@ export class FileCache {
 			this.pending.set(path, buffer);
 			this.map.set(path, await buffer);
 			this.pending.delete(path);
+			// @ts-ignore
 			return this.map.get(path).slice(0);
 		}
 	}
@@ -34,9 +37,9 @@ export class FileCache {
 
 	async readLocalFile(path: string): Promise<ArrayBuffer> {
 		const buffer = readFileSync(path);
-		var arrayBuffer = new ArrayBuffer(buffer.length);
-		var typedArray = new Uint8Array(arrayBuffer);
-		for (var i = 0; i < buffer.length; ++i) {
+		const arrayBuffer = new ArrayBuffer(buffer.length);
+		const typedArray = new Uint8Array(arrayBuffer);
+		for (let i = 0; i < buffer.length; ++i) {
 			typedArray[i] = buffer[i];
 		}
 		return arrayBuffer;
