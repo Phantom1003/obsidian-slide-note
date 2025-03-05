@@ -1,8 +1,8 @@
 {
 	"id": "slide-note",
 	"name": "Slide Note",
-	"version": "0.0.16",
-	"minAppVersion": "0.0.16",
+	"version": "0.0.17",
+	"minAppVersion": "0.0.17",
 	"description": "Conveniently take notes on PDF course slides :P",
 	"author": "Jinyan Xu",
 	"authorUrl": "https://github.com/Phantom1003",

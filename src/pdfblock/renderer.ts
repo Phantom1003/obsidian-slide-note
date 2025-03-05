@@ -168,11 +168,11 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 								const text = event_hover;
 								text.addClass("slide-note-text-layer");
 								text.style.setProperty('--scale-factor', zoom.toString());
-								pdfjs.renderTextLayer({
+								new pdfjs.TextLayer({
 									textContentSource: textContent,
 									container: text,
 									viewport: pageview
-								});
+								}).render();
 
 								new ResizeObserver(resize2Canvas).observe(canvas)
 							});
