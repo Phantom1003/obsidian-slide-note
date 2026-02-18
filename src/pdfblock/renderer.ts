@@ -9,6 +9,7 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 	sourcePath: string
 	settings: SlideNoteSettings
 	cache: FileCache
+	pdfdocument: any
 	public constructor(
 		el: HTMLElement,
 		params: PDFBlockParameters,
@@ -34,6 +35,11 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 				}
 			})
 		)
+		
+	}
+
+	onunload(){
+		this.pdfdocument?.destroy();
 	}
 
 	async init() {
@@ -44,26 +50,30 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 
 		const pos = hook.getBoundingClientRect().bottom;
 
-		if (pos != 0 && pos <= window.innerHeight) {
-			this.render();
-		}
-		else {
-			const delay = window.setInterval(
-				() => {
-					clearInterval(delay);
-					this.render();
-				},
-				(this.params.page[0] % 15 + 1) * 5000
-			)
-
-			const renderCallBack = function () {
-				if (hook.getBoundingClientRect().bottom != 0) {
-					clearInterval(delay);
-					this.render();
-				}
+		if (this.settings.lazy_load) {
+			if (pos != 0 && pos <= window.innerHeight) {
+				this.render();
 			}
-			document.addEventListener("wheel", renderCallBack.bind(this));
-			document.addEventListener("touchmove",  renderCallBack.bind(this));
+			else {
+				const delay = window.setInterval(
+					() => {
+						clearInterval(delay);
+						this.render();
+					},
+					(this.params.page[0] % 15 + 1) * 5000
+				)
+	
+				const renderCallBack = function () {
+					if (hook.getBoundingClientRect().bottom != 0) {
+						clearInterval(delay);
+						this.render();
+					}
+				}
+				document.addEventListener("wheel", renderCallBack.bind(this));
+				document.addEventListener("touchmove",  renderCallBack.bind(this));
+			}
+		} else {
+			this.render();
 		}
 	}
 
@@ -73,18 +83,18 @@ export class PDFBlockRenderer extends MarkdownRenderChild {
 			try {
 				const buffer = await this.cache.get(this.params.file);
 				const pdfjs = await loadPdfJs();
-				const pdfdocument = await pdfjs.getDocument(buffer).promise;
+				this.pdfdocument = await pdfjs.getDocument(buffer).promise;
 
 				if (this.params.page.includes(0)) {
 					this.params.page = Array.from(
-						{length: pdfdocument.numPages},
+						{length: this.pdfdocument.numPages},
 						(_, i) => i + 1
 					);
 				}
 
 				for (const pageNumber of this.params.page) {
 
-					const page = await pdfdocument.getPage(pageNumber);
+					const page = await this.pdfdocument.getPage(pageNumber);
 					const host = this.el.createEl("div");
 					host.addClass("slide-note-pdfblock");
 					host.style.position = "relative";

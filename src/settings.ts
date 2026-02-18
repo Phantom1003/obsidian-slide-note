@@ -6,6 +6,7 @@ export class SlideNoteSettings {
 	default_text: boolean = false;
 	default_dpi: number = 1;
 	support_better_pdf: boolean = false;
+	lazy_load: boolean = true;
 }
 
 export class SlideNoteSettingsTab extends PluginSettingTab {
@@ -57,7 +58,16 @@ export class SlideNoteSettingsTab extends PluginSettingTab {
 				.onChange((value) => {
 					this.plugin.settings.support_better_pdf = value;
 					this.plugin.saveSettings();
-				}
-			));
+				}));
+		
+		new Setting(containerEl)
+		.setName("Lazy Load Slide Note Blocks")
+		.setDesc("Delay rendering of slide-note code blocks until they are visible on screen. This can improve performance for large documents by reducing initial load time. DISABLE for printing your markdown file to PDF!")
+		.addToggle(toggle => toggle.setValue(this.plugin.settings.lazy_load)
+			.onChange((value) => {
+				this.plugin.settings.lazy_load = value;
+				this.plugin.saveSettings();
+			}));
+		
 	}
 }
